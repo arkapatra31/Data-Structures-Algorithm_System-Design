@@ -638,4 +638,4 @@ Test your understanding:
 
 ---
 
-*Next up: [Section 3 — Arrays](../Arrays/README.md)*
+*Next up: [Space Complexity](../SpaceComplexity/README.md)*
