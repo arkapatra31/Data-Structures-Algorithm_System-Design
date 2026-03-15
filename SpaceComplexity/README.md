@@ -793,4 +793,4 @@ Test your understanding — determine the space complexity:
 
 ---
 
-*Previous: [Big O Notation](../BigO/README.md) | Next: [Section 3 — Arrays](../Arrays/README.md)*
+*Previous: [Big O Notation](../BigO/README.md) | Next: [Arrays](../Arrays/README.md)*
