@@ -48,4 +48,4 @@ myTuple1.index(2)
 
 t1 = tuple('abcde56ui')
 print(t1)
-print(t1[1:5])
+print(t1[1:5:2])
