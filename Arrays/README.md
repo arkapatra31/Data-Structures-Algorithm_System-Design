@@ -800,4 +800,4 @@ print(a is c)   # True — same object
 
 ---
 
-*Previous: [Space Complexity](../SpaceComplexity/README.md) | Next: [Section 4 — Lists](../Lists/README.md)*
+*Previous: [Space Complexity](../SpaceComplexity/README.md) | Next: [Lists](../Lists/README.md)*
