@@ -1233,4 +1233,4 @@ def reverse(self):
 
 ---
 
-*Previous: [Linked Lists (Overview)](../LinkedList/README.md) | Next: [Singly Linked List Problems](../SinglyLinkedListProblems/README.md)*
+*Previous: [Linked Lists (Overview)](../7.Classes/README.md) | Next: [Circular Linked List](../9.CircularLinkedList/README.md)*

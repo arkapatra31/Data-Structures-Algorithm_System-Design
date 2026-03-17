@@ -928,4 +928,4 @@ a, *rest = t      # a=1, rest=[2, 3]
 
 ---
 
-*Previous: [Dictionaries](../Dictionaries/README.md) | Next: [Class](../Class/README.md)*
+*Previous: [Dictionaries](../5.Dictionaries/README.md) | Next: [Class](../7.Classes/README.md)*

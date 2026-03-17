@@ -1228,4 +1228,4 @@ print([p])        # [Point(3, 4)] — containers use __repr__
 
 ---
 
-*Previous: [Tuples](../Tuples/README.md) | Next: [Linked List](../LinkedList/README.md)*
+*Previous: [Tuples](../6.Tuples/README.md) | Next: [Single Linked List](../8.SingleLinkedList/README.md)*

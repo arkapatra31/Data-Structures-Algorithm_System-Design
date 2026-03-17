@@ -972,4 +972,4 @@ d = {(1, 2): "tuple key"}     # ✅
 
 ---
 
-*Previous: [Lists](../Lists/README.md) | Next: [Tuples](../Tuples/README.md)*
+*Previous: [Lists](../4.Lists/README.md) | Next: [Tuples](../6.Tuples/README.md)*

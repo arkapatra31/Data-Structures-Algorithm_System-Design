@@ -638,4 +638,4 @@ Test your understanding:
 
 ---
 
-*Next up: [Space Complexity](../SpaceComplexity/README.md)*
+*Next up: [Space Complexity](../2.SpaceComplexity/README.md)*
