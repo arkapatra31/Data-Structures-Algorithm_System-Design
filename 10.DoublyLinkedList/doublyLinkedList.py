@@ -191,6 +191,26 @@ class DoublyLinkedList:
             return old_node
         return False
 
+    def delete_all(self):
+        if self.length == 0:
+            return None
+        elif self.length == 1:
+            self.head, self.tail = None, None
+            self.length = 0
+            return True
+        else:
+            # Method 1 ( GC will clear up eventually)
+            # self.head, self.tail = None, None
+
+            # Method 2 (Breaking the links between each nodes)
+            current = self.head
+            while current:
+                next_node = current.next
+                current.prev, current.next = None, None
+                current = next_node
+            self.length = 0
+            return True
+
 if __name__ == "__main__":
     doubly_linked_list = DoublyLinkedList()
     doubly_linked_list.append(78)
@@ -216,3 +236,5 @@ if __name__ == "__main__":
     print(f"After popping last node: {doubly_linked_list}")
     print(f"Removing node at index 2: {doubly_linked_list.remove(2)}")
     print(f"After removing node at index 2: {doubly_linked_list}")
+    print(f"Deleting all nodes: {doubly_linked_list.delete_all()}")
+    print(f"After deleting all nodes: {doubly_linked_list}")
