@@ -163,11 +163,15 @@ class DoublyLinkedList:
     def pop(self):
         if self.length == 0:
             return None
+        elif self.length == 1:
+            current = self.tail
+            self.head, self.tail = None, None
+            self.length = 0
+            return current
         else:
             current = self.tail
             self.tail = current.prev
-            current.prev = None
-            self.tail.next = None
+            current.prev, current.next = None, None
             self.length -= 1
             return current
 
