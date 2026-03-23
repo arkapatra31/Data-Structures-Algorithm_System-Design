@@ -28,18 +28,6 @@ def find2sum(nums, target):
             return [seen[complement], i]
         seen[num] = i
     return []
-    
-    # Below code also works but:-
-    # index scan the list from beginning to end so it is time consuming
-    # if target is 6 and nums is [3,4,8,9,2], then it will return [0,0] which is incorrect
-    idx = []
-    for num in nums:
-        complement = target - num
-        if complement in nums:
-            idx.append(nums.index(num))
-            idx.append(nums.index(complement))
-            return idx
-    return idx
 
 
 nums = [11,15,5,4,3]
