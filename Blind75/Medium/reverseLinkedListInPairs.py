@@ -38,6 +38,10 @@ class Solution:
             next.next = current  # 2 -> 1
             prev, current = current, current.next  # prev=Node(1), current=Node(3)
         return dummy.next
+    #  prev   current   next
+    #  dummy     1       2
+    #    1       3       4
+    #    3       5       None
 
     def printList(self, head):
         result = []
