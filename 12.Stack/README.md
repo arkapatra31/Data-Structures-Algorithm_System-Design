@@ -562,4 +562,4 @@ Key patterns:
 
 ---
 
-*Previous: [Circular Doubly Linked List](../11.CircularDoublyLinkedList/README.md) | Next: Queue (coming soon)*
+*Previous: [Circular Doubly Linked List](../11.CircularDoublyLinkedList/README.md) | Next: [Queues](../13.Queues/README.md)

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Queues — Complete Reference Documentation</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg2: #f8f7f4; --bg3: #f0efe8;
+    --text: #1a1a18; --text2: #5f5e5a; --text3: #88877f;
+    --border: #d3d1c7; --border-l: #e8e6de;
+    --purple: #534AB7; --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --teal: #1D9E75; --teal-bg: #E1F5EE; --teal-text: #085041;
+    --coral: #D85A30; --coral-bg: #FAECE7; --coral-text: #712B13;
+    --blue: #378ADD; --blue-bg: #E6F1FB; --blue-text: #0C447C;
+    --amber: #BA7517; --amber-bg: #FAEEDA; --amber-text: #633806;
+    --red: #E24B4A; --red-bg: #FCEBEB; --red-text: #791F1F;
+    --green: #639922; --green-bg: #EAF3DE; --green-text: #27500A;
+    --pink: #D4537E; --pink-bg: #FBEAF0; --pink-text: #72243E;
+    --gray-bg: #F1EFE8; --gray-text: #444441;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18; --bg2: #2c2c2a; --bg3: #3a3a37;
+      --text: #e8e6de; --text2: #b4b2a9; --text3: #88877f;
+      --border: #5f5e5a; --border-l: #444441;
+      --purple-bg: #26215C; --purple-text: #CECBF6;
+      --teal-bg: #04342C; --teal-text: #9FE1CB;
+      --coral-bg: #4A1B0C; --coral-text: #F5C4B3;
+      --blue-bg: #042C53; --blue-text: #B5D4F4;
+      --amber-bg: #412402; --amber-text: #FAC775;
+      --red-bg: #501313; --red-text: #F7C1C1;
+      --green-bg: #173404; --green-text: #C0DD97;
+      --pink-bg: #4B1528; --pink-text: #F4C0D1;
+      --gray-bg: #2C2C2A; --gray-text: #D3D1C7;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+  .container { max-width: 860px; margin: 0 auto; padding: 3rem 1.5rem 4rem; }
+
+  /* Hero */
+  .hero { text-align: center; margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border-l); }
+  .hero h1 { font-size: 2.2rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
+  .hero p { font-size: 1.05rem; color: var(--text2); max-width: 560px; margin: 0 auto; }
+  .badge { display: inline-block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 4px 12px; border-radius: 20px; background: var(--purple-bg); color: var(--purple-text); margin-bottom: 1rem; }
+
+  /* TOC */
+  .toc { background: var(--bg2); border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 3rem; }
+  .toc h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 0.75rem; }
+  .toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 2rem; }
+  .toc a { color: var(--purple); text-decoration: none; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+  .toc a:hover { text-decoration: underline; }
+  .toc-num { font-size: 0.75rem; color: var(--text3); font-weight: 500; min-width: 18px; }
+
+  /* Sections */
+  .section { margin-bottom: 3.5rem; }
+  .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-l); }
+  .section-num { font-size: 1.6rem; font-weight: 700; color: var(--text3); line-height: 1; }
+  .section-header h2 { font-size: 1.5rem; font-weight: 600; }
+  .section p { color: var(--text); margin-bottom: 1rem; }
+
+  /* Info cards */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 1.5rem 0; }
+  .info-card { background: var(--bg2); border-radius: 10px; padding: 1rem 1.25rem; }
+  .info-card.full { grid-column: 1 / -1; }
+  .info-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin-bottom: 6px; font-weight: 600; }
+  .info-card p { font-size: 0.92rem; color: var(--text2); margin: 0; line-height: 1.6; }
+
+  /* Colored accent cards */
+  .accent-card { border-radius: 10px; padding: 1rem 1.25rem; margin: 1rem 0; }
+  .accent-card.teal { background: var(--teal-bg); }
+  .accent-card.teal .info-label { color: var(--teal-text); }
+  .accent-card.teal p { color: var(--teal-text); }
+  .accent-card.coral { background: var(--coral-bg); }
+  .accent-card.coral .info-label { color: var(--coral-text); }
+  .accent-card.coral p { color: var(--coral-text); }
+  .accent-card.purple { background: var(--purple-bg); }
+  .accent-card.purple .info-label { color: var(--purple-text); }
+  .accent-card.purple p { color: var(--purple-text); }
+  .accent-card.blue { background: var(--blue-bg); }
+  .accent-card.blue .info-label { color: var(--blue-text); }
+  .accent-card.blue p { color: var(--blue-text); }
+  .accent-card.amber { background: var(--amber-bg); }
+  .accent-card.amber .info-label { color: var(--amber-text); }
+  .accent-card.amber p { color: var(--amber-text); }
+
+  /* Operation table */
+  .op-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+  .op-table th { text-align: left; padding: 10px 14px; background: var(--bg2); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); border-bottom: 1px solid var(--border-l); }
+  .op-table td { padding: 10px 14px; border-bottom: 1px solid var(--border-l); color: var(--text2); }
+  .op-table tr:last-child td { border-bottom: none; }
+  .op-table code { font-family: "SF Mono", "Fira Code", monospace; font-size: 0.82rem; background: var(--bg3); padding: 2px 7px; border-radius: 4px; color: var(--text); }
+  .complexity { display: inline-block; background: var(--green-bg); color: var(--green-text); font-size: 0.78rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; font-family: "SF Mono", monospace; }
+  .complexity.warn { background: var(--amber-bg); color: var(--amber-text); }
+
+  /* Diagram container */
+  .diagram-box { background: var(--bg2); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto; }
+  .diagram-box svg { display: block; margin: 0 auto; }
+  .diagram-caption { text-align: center; font-size: 0.82rem; color: var(--text3); margin-top: 0.75rem; }
+
+  /* Comparison table */
+  .cmp-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.85rem; }
+  .cmp-table th { text-align: left; padding: 12px; background: var(--bg2); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); border-bottom: 2px solid var(--border); }
+  .cmp-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-l); color: var(--text2); vertical-align: top; }
+  .cmp-table tr:last-child td { border-bottom: none; }
+  .cmp-table td:first-child { font-weight: 600; color: var(--text); white-space: nowrap; }
+  .pill { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; }
+  .pill.fifo { background: var(--teal-bg); color: var(--teal-text); }
+  .pill.priority { background: var(--coral-bg); color: var(--coral-text); }
+  .pill.both { background: var(--purple-bg); color: var(--purple-text); }
+
+  /* Tags */
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag { display: inline-block; font-size: 0.78rem; padding: 4px 10px; border-radius: 6px; background: var(--bg3); color: var(--text2); }
+
+  /* Footer */
+  .footer { text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-l); color: var(--text3); font-size: 0.82rem; }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 1.6rem; }
+    .info-grid, .toc-grid { grid-template-columns: 1fr; }
+    .cmp-table { font-size: 0.78rem; }
+    .cmp-table td, .cmp-table th { padding: 8px 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="badge">Data Structures</div>
+    <h1>Queues</h1>
+    <p>A comprehensive reference guide covering the four fundamental queue types, their mechanisms, complexities, and real-world applications.</p>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h2>Contents</h2>
+    <div class="toc-grid">
+      <a href="#simple"><span class="toc-num">01</span> Simple (Linear) Queue</a>
+      <a href="#circular"><span class="toc-num">02</span> Circular Queue</a>
+      <a href="#deque"><span class="toc-num">03</span> Double-Ended Queue</a>
+      <a href="#priority"><span class="toc-num">04</span> Priority Queue</a>
+      <a href="#comparison"><span class="toc-num">05</span> Comparison Table</a>
+      <a href="#when"><span class="toc-num">06</span> When to Use What</a>
+    </div>
+  </div>
+
+  <!-- ===== 1. SIMPLE QUEUE ===== -->
+  <div class="section" id="simple">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>Simple (Linear) Queue</h2>
+    </div>
+    <p>The simple queue is the most fundamental queue type. It follows the <strong>FIFO</strong> (First In, First Out) principle — the element that enters first is the element that leaves first, just like a line of people at a ticket counter.</p>
+    <p>Internally, two pointers track the state: a <strong>front</strong> pointer indicating where the next dequeue will occur, and a <strong>rear</strong> pointer indicating where the next enqueue will place the element. Both start at -1 and increment as operations happen.</p>
+
+    <div class="diagram-box">
+      <svg width="100%" viewBox="0 0 680 140" xmlns="http://www.w3.org/2000/svg">
+        <rect x="60" y="10" width="80" height="34" rx="6" fill="var(--bg3)" stroke="var(--border)" stroke-width="0.5"/>
+        <text x="100" y="31" text-anchor="middle" font-size="12" fill="var(--text2)" font-family="sans-serif" font-weight="500">Enqueue →</text>
+        <rect x="160" y="4" width="360" height="48" rx="8" fill="none" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="6 4"/>
+        <rect x="170" y="12" width="64" height="32" rx="5" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="0.5"/><text x="202" y="33" text-anchor="middle" font-size="13" fill="var(--teal-text)" font-weight="500" font-family="sans-serif">50</text>
+        <rect x="244" y="12" width="64" height="32" rx="5" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="0.5"/><text x="276" y="33" text-anchor="middle" font-size="13" fill="var(--teal-text)" font-weight="500" font-family="sans-serif">40</text>
+        <rect x="318" y="12" width="64" height="32" rx="5" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="0.5"/><text x="350" y="33" text-anchor="middle" font-size="13" fill="var(--teal-text)" font-weight="500" font-family="sans-serif">30</text>
+        <rect x="392" y="12" width="64" height="32" rx="5" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="0.5"/><text x="424" y="33" text-anchor="middle" font-size="13" fill="var(--purple-text)" font-weight="500" font-family="sans-serif">20</text>
+        <rect x="466" y="12" width="44" height="32" rx="5" fill="var(--coral-bg)" stroke="var(--coral)" stroke-width="0.5"/><text x="488" y="33" text-anchor="middle" font-size="13" fill="var(--coral-text)" font-weight="500" font-family="sans-serif">10</text>
+        <rect x="530" y="10" width="90" height="34" rx="6" fill="var(--bg3)" stroke="var(--border)" stroke-width="0.5"/>
+        <text x="575" y="31" text-anchor="middle" font-size="12" fill="var(--text2)" font-family="sans-serif" font-weight="500">→ Dequeue</text>
+        <text x="196" y="72" text-anchor="middle" font-size="11" fill="var(--text3)" font-family="sans-serif">Rear</text>
+        <text x="488" y="72" text-anchor="middle" font-size="11" fill="var(--text3)" font-family="sans-serif">Front</text>
+        <!-- Legend -->
+        <rect x="160" y="100" width="12" height="12" rx="3" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="0.5"/>
+        <text x="180" y="111" font-size="11" fill="var(--text3)" font-family="sans-serif">Waiting</text>
+        <rect x="240" y="100" width="12" height="12" rx="3" fill="var(--coral-bg)" stroke="var(--coral)" stroke-width="0.5"/>
+        <text x="260" y="111" font-size="11" fill="var(--text3)" font-family="sans-serif">Next out (front)</text>
+        <rect x="380" y="100" width="12" height="12" rx="3" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="0.5"/>
+        <text x="400" y="111" font-size="11" fill="var(--text3)" font-family="sans-serif">Middle of queue</text>
+      </svg>
+      <div class="diagram-caption">Elements enter at the rear and leave from the front — strict FIFO ordering.</div>
+    </div>
+
+    <div class="accent-card teal">
+      <div class="info-label">Key insight</div>
+      <p>Once elements are dequeued, the memory slots they occupied at the front of the array become wasted — they can never be reused, even if the array isn't full. This is the fundamental limitation that circular queues solve.</p>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">Underlying structure</div>
+        <p>Array or linked list. Array-based is more cache-friendly; linked list avoids fixed capacity.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-label">Overflow condition</div>
+        <p>When <code>rear == capacity - 1</code>, even if front slots are empty (phantom overflow).</p>
+      </div>
+      <div class="info-card full">
+        <div class="info-label">Real-world applications</div>
+        <div class="tags">
+          <span class="tag">Print job spooling</span>
+          <span class="tag">CPU task scheduling</span>
+          <span class="tag">Breadth-first search (BFS)</span>
+          <span class="tag">Request handling in web servers</span>
+          <span class="tag">Message queues (RabbitMQ, SQS)</span>
+          <span class="tag">Keyboard input buffer</span>
+        </div>
+      </div>
+    </div>
+
+    <table class="op-table">
+      <thead><tr><th>Operation</th><th>Description</th><th>Time</th></tr></thead>
+      <tbody>
+        <tr><td><code>enqueue(item)</code></td><td>Insert element at the rear of the queue</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>dequeue()</code></td><td>Remove and return the front element</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>peek()</code></td><td>View the front element without removing it</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>is_empty()</code></td><td>Check if the queue has no elements</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>size()</code></td><td>Return the number of elements in the queue</td><td><span class="complexity">O(1)</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 2. CIRCULAR QUEUE ===== -->
+  <div class="section" id="circular">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>Circular Queue</h2>
+    </div>
+    <p>A circular queue improves upon the simple queue by treating the underlying array as a <strong>ring buffer</strong>. When the rear pointer reaches the end of the array, it wraps back around to the beginning using modular arithmetic: <code>rear = (rear + 1) % capacity</code>.</p>
+    <p>This eliminates the "phantom overflow" problem where a linear queue reports itself as full even though freed slots exist at the front. Every slot in the array can be reused, making circular queues far more memory-efficient for fixed-size buffers.</p>
+
+    <div class="diagram-box">
+      <svg width="100%" viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="260" cy="140" r="110" fill="none" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="6 4"/>
+        <!-- Slot 0 top - filled -->
+        <rect x="230" y="16" width="60" height="32" rx="5" fill="var(--coral-bg)" stroke="var(--coral)" stroke-width="0.5"/><text x="260" y="36" text-anchor="middle" font-size="12" fill="var(--coral-text)" font-weight="500" font-family="sans-serif">A</text>
+        <!-- Slot 1 -->
+        <rect x="330" y="46" width="60" height="32" rx="5" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="0.5"/><text x="360" y="66" text-anchor="middle" font-size="12" fill="var(--teal-text)" font-weight="500" font-family="sans-serif">B</text>
+        <!-- Slot 2 - rear -->
+        <rect x="362" y="124" width="60" height="32" rx="5" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="0.5"/><text x="392" y="144" text-anchor="middle" font-size="12" fill="var(--purple-text)" font-weight="500" font-family="sans-serif">C</text>
+        <!-- Slot 3 empty -->
+        <rect x="330" y="202" width="60" height="32" rx="5" fill="var(--bg3)" stroke="var(--border)" stroke-width="0.5"/><text x="360" y="222" text-anchor="middle" font-size="12" fill="var(--text3)" font-family="sans-serif">—</text>
+        <!-- Slot 4 empty -->
+        <rect x="230" y="234" width="60" height="32" rx="5" fill="var(--bg3)" stroke="var(--border)" stroke-width="0.5"/><text x="260" y="254" text-anchor="middle" font-size="12" fill="var(--text3)" font-family="sans-serif">—</text>
+        <!-- Slot 5 empty -->
+        <rect x="130" y="202" width="60" height="32" rx="5" fill="var(--bg3)" stroke="var(--border)" stroke-width="0.5"/><text x="160" y="222" text-anchor="middle" font-size="12" fill="var(--text3)" font-family="sans-serif">—</text>
+        <!-- Slot 6 empty -->
+        <rect x="98" y="124" width="60" height="32" rx="5" fill="var(--bg3)" stroke="var(--border)" stroke-width="0.5"/><text x="128" y="144" text-anchor="middle" font-size="12" fill="var(--text3)" font-family="sans-serif">—</text>
+        <!-- Slot 7 - front neighbor -->
+        <rect x="130" y="46" width="60" height="32" rx="5" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="0.5"/><text x="160" y="66" text-anchor="middle" font-size="12" fill="var(--teal-text)" font-weight="500" font-family="sans-serif">Z</text>
+        <!-- Labels -->
+        <text x="260" y="140" text-anchor="middle" font-size="13" font-weight="600" fill="var(--text3)" font-family="sans-serif">Capacity: 8</text>
+        <text x="260" y="158" text-anchor="middle" font-size="11" fill="var(--text3)" font-family="sans-serif">Used: 4 / Empty: 4</text>
+        <!-- Front/Rear labels -->
+        <text x="484" y="68" font-size="11" fill="var(--coral-text)" font-family="sans-serif" font-weight="600">← Front (dequeue)</text>
+        <text x="484" y="142" font-size="11" fill="var(--purple-text)" font-family="sans-serif" font-weight="600">← Rear (enqueue)</text>
+        <!-- Formula -->
+        <rect x="470" y="190" width="190" height="56" rx="8" fill="var(--bg2)" stroke="var(--border-l)" stroke-width="0.5"/>
+        <text x="565" y="210" text-anchor="middle" font-size="10" fill="var(--text3)" font-family="sans-serif" font-weight="600" text-transform="uppercase" letter-spacing="1">WRAP FORMULA</text>
+        <text x="565" y="232" text-anchor="middle" font-size="13" fill="var(--text)" font-family="monospace">next = (i + 1) % capacity</text>
+      </svg>
+      <div class="diagram-caption">The rear wraps around to reuse freed slots — no wasted memory.</div>
+    </div>
+
+    <div class="accent-card purple">
+      <div class="info-label">Key insight</div>
+      <p>A circular queue distinguishes between "full" and "empty" states because both could have front == rear. Common solutions: maintain a count variable, sacrifice one slot as a sentinel, or use a boolean flag.</p>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">Full condition</div>
+        <p><code>(rear + 1) % capacity == front</code> — the next enqueue position would overlap the front.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-label">Empty condition</div>
+        <p><code>front == -1</code> or a count variable equals zero.</p>
+      </div>
+      <div class="info-card full">
+        <div class="info-label">Real-world applications</div>
+        <div class="tags">
+          <span class="tag">CPU round-robin scheduling</span>
+          <span class="tag">Streaming audio/video buffers</span>
+          <span class="tag">Network packet buffers</span>
+          <span class="tag">Traffic light control systems</span>
+          <span class="tag">Circular logging (ring buffers)</span>
+          <span class="tag">Producer-consumer pattern</span>
+        </div>
+      </div>
+    </div>
+
+    <table class="op-table">
+      <thead><tr><th>Operation</th><th>Description</th><th>Time</th></tr></thead>
+      <tbody>
+        <tr><td><code>enqueue(item)</code></td><td>Insert at rear; rear wraps via modular arithmetic</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>dequeue()</code></td><td>Remove from front; front wraps via modular arithmetic</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>peek()</code></td><td>View front element</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>is_full()</code></td><td>Check if all slots are occupied</td><td><span class="complexity">O(1)</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 3. DEQUE ===== -->
+  <div class="section" id="deque">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>Double-Ended Queue (Deque)</h2>
+    </div>
+    <p>A deque (pronounced "deck") generalizes the queue by allowing insertion and deletion at <strong>both ends</strong>. It can behave as a stack (LIFO) when you only use one end, or as a queue (FIFO) when you insert at one end and remove from the other.</p>
+    <p>There are two restricted variants: an <strong>input-restricted deque</strong> allows insertion at only one end but deletion from both, while an <strong>output-restricted deque</strong> allows deletion from only one end but insertion at both.</p>
+
+    <div class="diagram-box">
+      <svg width="100%" viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+        <!-- Front label -->
+        <text x="100" y="16" text-anchor="middle" font-size="11" fill="var(--text3)" font-family="sans-serif" font-weight="600">FRONT</text>
+        <!-- Rear label -->
+        <text x="580" y="16" text-anchor="middle" font-size="11" fill="var(--text3)" font-family="sans-serif" font-weight="600">REAR</text>
+        <!-- Left arrows -->
+        <text x="32" y="52" font-size="10" fill="var(--teal-text)" font-family="sans-serif">Insert →</text>
+        <text x="32" y="96" font-size="10" fill="var(--coral-text)" font-family="sans-serif">← Delete</text>
+        <!-- Container -->
+        <rect x="100" y="30" width="480" height="50" rx="8" fill="none" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="6 4"/>
+        <!-- Elements -->
+        <rect x="112" y="38" width="72" height="34" rx="5" fill="var(--coral-bg)" stroke="var(--coral)" stroke-width="0.5"/><text x="148" y="59" text-anchor="middle" font-size="12" fill="var(--coral-text)" font-weight="500" font-family="sans-serif">10</text>
+        <rect x="196" y="38" width="72" height="34" rx="5" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="0.5"/><text x="232" y="59" text-anchor="middle" font-size="12" fill="var(--teal-text)" font-weight="500" font-family="sans-serif">20</text>
+        <rect x="280" y="38" width="72" height="34" rx="5" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="0.5"/><text x="316" y="59" text-anchor="middle" font-size="12" fill="var(--teal-text)" font-weight="500" font-family="sans-serif">30</text>
+        <rect x="364" y="38" width="72" height="34" rx="5" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="0.5"/><text x="400" y="59" text-anchor="middle" font-size="12" fill="var(--teal-text)" font-weight="500" font-family="sans-serif">40</text>
+        <rect x="448" y="38" width="72" height="34" rx="5" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="0.5"/><text x="484" y="59" text-anchor="middle" font-size="12" fill="var(--purple-text)" font-weight="500" font-family="sans-serif">50</text>
+        <!-- Right arrows -->
+        <text x="592" y="52" font-size="10" fill="var(--coral-text)" font-family="sans-serif">Delete →</text>
+        <text x="592" y="96" font-size="10" fill="var(--teal-text)" font-family="sans-serif">← Insert</text>
+        <!-- Variants -->
+        <rect x="100" y="110" width="220" height="34" rx="6" fill="var(--blue-bg)" stroke="var(--blue)" stroke-width="0.5"/><text x="210" y="131" text-anchor="middle" font-size="12" fill="var(--blue-text)" font-weight="500" font-family="sans-serif">Input-restricted deque</text>
+        <rect x="360" y="110" width="220" height="34" rx="6" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="0.5"/><text x="470" y="131" text-anchor="middle" font-size="12" fill="var(--amber-text)" font-weight="500" font-family="sans-serif">Output-restricted deque</text>
+        <text x="210" y="158" text-anchor="middle" font-size="10" fill="var(--text3)" font-family="sans-serif">Insert at one end only</text>
+        <text x="470" y="158" text-anchor="middle" font-size="10" fill="var(--text3)" font-family="sans-serif">Delete from one end only</text>
+      </svg>
+      <div class="diagram-caption">Four operations: insert/delete at front, insert/delete at rear.</div>
+    </div>
+
+    <div class="accent-card blue">
+      <div class="info-label">Key insight</div>
+      <p>A deque is a superset of both stacks and queues. Python's <code>collections.deque</code> is implemented as a doubly-linked list of fixed-size blocks, giving O(1) operations at both ends and making it the standard choice for BFS, sliding window problems, and any scenario needing fast access at both ends.</p>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">As a stack</div>
+        <p>Insert and delete from the same end (e.g., both from front). Gives LIFO behavior.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-label">As a queue</div>
+        <p>Insert at rear, delete from front. Gives standard FIFO behavior.</p>
+      </div>
+      <div class="info-card full">
+        <div class="info-label">Real-world applications</div>
+        <div class="tags">
+          <span class="tag">Browser history (back/forward)</span>
+          <span class="tag">Undo/redo in editors</span>
+          <span class="tag">Sliding window maximum/minimum</span>
+          <span class="tag">Work-stealing in thread pools</span>
+          <span class="tag">Palindrome checking</span>
+          <span class="tag">A-steal scheduling algorithm</span>
+        </div>
+      </div>
+    </div>
+
+    <table class="op-table">
+      <thead><tr><th>Operation</th><th>Description</th><th>Time</th></tr></thead>
+      <tbody>
+        <tr><td><code>insert_front(item)</code></td><td>Add element at the front</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>insert_rear(item)</code></td><td>Add element at the rear</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>delete_front()</code></td><td>Remove element from the front</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>delete_rear()</code></td><td>Remove element from the rear</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>peek_front()</code></td><td>View front element</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>peek_rear()</code></td><td>View rear element</td><td><span class="complexity">O(1)</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 4. PRIORITY QUEUE ===== -->
+  <div class="section" id="priority">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>Priority Queue</h2>
+    </div>
+    <p>A priority queue breaks from FIFO ordering entirely. Each element has an associated <strong>priority value</strong>, and the element with the highest priority (typically the smallest number) is always dequeued first, regardless of insertion order.</p>
+    <p>The most efficient implementation uses a <strong>binary heap</strong> — a complete binary tree stored in an array where every parent node has a higher priority than its children. A min-heap serves the smallest value first; a max-heap serves the largest.</p>
+
+    <div class="diagram-box">
+      <svg width="100%" viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- Incoming unsorted -->
+        <text x="70" y="16" text-anchor="middle" font-size="10" fill="var(--text3)" font-family="sans-serif" font-weight="600" text-transform="uppercase" letter-spacing="1">INCOMING</text>
+        <rect x="30" y="28" width="80" height="28" rx="5" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="0.5"/><text x="70" y="46" text-anchor="middle" font-size="11" fill="var(--teal-text)" font-family="sans-serif">Email (P:3)</text>
+        <rect x="30" y="62" width="80" height="28" rx="5" fill="var(--coral-bg)" stroke="var(--coral)" stroke-width="0.5"/><text x="70" y="80" text-anchor="middle" font-size="11" fill="var(--coral-text)" font-family="sans-serif">Bug fix (P:1)</text>
+        <rect x="30" y="96" width="80" height="28" rx="5" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="0.5"/><text x="70" y="114" text-anchor="middle" font-size="11" fill="var(--amber-text)" font-family="sans-serif">Report (P:2)</text>
+        <!-- Arrow -->
+        <text x="145" y="74" font-size="16" fill="var(--text3)" font-family="sans-serif">→</text>
+        <!-- Binary heap visualization -->
+        <text x="340" y="16" text-anchor="middle" font-size="10" fill="var(--text3)" font-family="sans-serif" font-weight="600" text-transform="uppercase" letter-spacing="1">MIN-HEAP (INTERNAL)</text>
+        <!-- Root -->
+        <circle cx="340" cy="52" r="20" fill="var(--coral-bg)" stroke="var(--coral)" stroke-width="0.5"/><text x="340" y="48" text-anchor="middle" font-size="10" fill="var(--coral-text)" font-weight="600" font-family="sans-serif">P:1</text><text x="340" y="62" text-anchor="middle" font-size="9" fill="var(--coral-text)" font-family="sans-serif">Bug fix</text>
+        <!-- Left child -->
+        <line x1="322" y1="68" x2="270" y2="102" stroke="var(--border)" stroke-width="0.5"/>
+        <circle cx="260" cy="116" r="20" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="0.5"/><text x="260" y="112" text-anchor="middle" font-size="10" fill="var(--amber-text)" font-weight="600" font-family="sans-serif">P:2</text><text x="260" y="125" text-anchor="middle" font-size="9" fill="var(--amber-text)" font-family="sans-serif">Report</text>
+        <!-- Right child -->
+        <line x1="358" y1="68" x2="410" y2="102" stroke="var(--border)" stroke-width="0.5"/>
+        <circle cx="420" cy="116" r="20" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="0.5"/><text x="420" y="112" text-anchor="middle" font-size="10" fill="var(--teal-text)" font-weight="600" font-family="sans-serif">P:3</text><text x="420" y="125" text-anchor="middle" font-size="9" fill="var(--teal-text)" font-family="sans-serif">Email</text>
+        <!-- Arrow out -->
+        <text x="490" y="56" font-size="16" fill="var(--text3)" font-family="sans-serif">→</text>
+        <!-- Dequeued -->
+        <text x="580" y="16" text-anchor="middle" font-size="10" fill="var(--text3)" font-family="sans-serif" font-weight="600" text-transform="uppercase" letter-spacing="1">SERVED FIRST</text>
+        <rect x="530" y="32" width="100" height="40" rx="8" fill="var(--coral-bg)" stroke="var(--coral)" stroke-width="1"/><text x="580" y="50" text-anchor="middle" font-size="12" fill="var(--coral-text)" font-weight="600" font-family="sans-serif">Bug fix</text><text x="580" y="64" text-anchor="middle" font-size="10" fill="var(--coral-text)" font-family="sans-serif">Priority 1</text>
+        <!-- Heap property note -->
+        <rect x="200" y="160" width="280" height="30" rx="6" fill="var(--bg3)" stroke="var(--border-l)" stroke-width="0.5"/>
+        <text x="340" y="180" text-anchor="middle" font-size="11" fill="var(--text3)" font-family="sans-serif">Heap property: parent ≤ children (min-heap)</text>
+      </svg>
+      <div class="diagram-caption">Elements are internally organized by priority, not arrival order. The root of the heap always holds the highest-priority item.</div>
+    </div>
+
+    <div class="accent-card coral">
+      <div class="info-label">Key insight</div>
+      <p>Insertion triggers a "bubble up" — the new element swaps with its parent until the heap property is restored. Deletion triggers a "bubble down" — the root is replaced by the last element, which then sinks to its correct position. Both operations are O(log n) because the heap's height is log₂(n).</p>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">Min-heap vs max-heap</div>
+        <p>Min-heap: smallest priority served first (common in algorithms). Max-heap: largest value served first (useful for leaderboards, top-K).</p>
+      </div>
+      <div class="info-card">
+        <div class="info-label">Heap as array</div>
+        <p>For node at index <code>i</code>: left child = <code>2i+1</code>, right child = <code>2i+2</code>, parent = <code>(i-1)//2</code>. No pointers needed.</p>
+      </div>
+      <div class="info-card full">
+        <div class="info-label">Real-world applications</div>
+        <div class="tags">
+          <span class="tag">Hospital ER triage</span>
+          <span class="tag">Dijkstra's shortest path</span>
+          <span class="tag">A* pathfinding</span>
+          <span class="tag">Huffman encoding</span>
+          <span class="tag">OS process scheduling</span>
+          <span class="tag">Event-driven simulation</span>
+          <span class="tag">Merge K sorted lists</span>
+          <span class="tag">Bandwidth management (QoS)</span>
+        </div>
+      </div>
+    </div>
+
+    <table class="op-table">
+      <thead><tr><th>Operation</th><th>Description</th><th>Time</th></tr></thead>
+      <tbody>
+        <tr><td><code>enqueue(item, priority)</code></td><td>Insert item; bubble up to maintain heap property</td><td><span class="complexity warn">O(log n)</span></td></tr>
+        <tr><td><code>dequeue()</code></td><td>Remove highest-priority item; bubble down to restore heap</td><td><span class="complexity warn">O(log n)</span></td></tr>
+        <tr><td><code>peek()</code></td><td>View highest-priority item (root of heap)</td><td><span class="complexity">O(1)</span></td></tr>
+        <tr><td><code>heapify(array)</code></td><td>Build a heap from an unsorted array</td><td><span class="complexity">O(n)</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 5. COMPARISON ===== -->
+  <div class="section" id="comparison">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>Comparison at a Glance</h2>
+    </div>
+    <table class="cmp-table">
+      <thead>
+        <tr><th>Aspect</th><th>Simple Queue</th><th>Circular Queue</th><th>Deque</th><th>Priority Queue</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ordering</td>
+          <td><span class="pill fifo">FIFO</span></td>
+          <td><span class="pill fifo">FIFO</span></td>
+          <td><span class="pill both">Both ends</span></td>
+          <td><span class="pill priority">By priority</span></td>
+        </tr>
+        <tr>
+          <td>Insert</td>
+          <td>Rear only</td>
+          <td>Rear (wraps)</td>
+          <td>Front or rear</td>
+          <td>Anywhere (sorted by heap)</td>
+        </tr>
+        <tr>
+          <td>Delete</td>
+          <td>Front only</td>
+          <td>Front (wraps)</td>
+          <td>Front or rear</td>
+          <td>Highest priority element</td>
+        </tr>
+        <tr>
+          <td>Space</td>
+          <td>Wastes freed slots</td>
+          <td>Reuses all slots</td>
+          <td>Dynamic</td>
+          <td>Dynamic (heap array)</td>
+        </tr>
+        <tr>
+          <td>Enqueue</td>
+          <td><span class="complexity">O(1)</span></td>
+          <td><span class="complexity">O(1)</span></td>
+          <td><span class="complexity">O(1)</span></td>
+          <td><span class="complexity warn">O(log n)</span></td>
+        </tr>
+        <tr>
+          <td>Dequeue</td>
+          <td><span class="complexity">O(1)</span></td>
+          <td><span class="complexity">O(1)</span></td>
+          <td><span class="complexity">O(1)</span></td>
+          <td><span class="complexity warn">O(log n)</span></td>
+        </tr>
+        <tr>
+          <td>Best for</td>
+          <td>BFS, task queues</td>
+          <td>Buffers, round-robin</td>
+          <td>Sliding window, undo/redo</td>
+          <td>Dijkstra, scheduling, triage</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 6. WHEN TO USE ===== -->
+  <div class="section" id="when">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>When to Use What</h2>
+    </div>
+    <p>Choosing the right queue type depends on your specific constraints and access patterns. Here's a decision framework:</p>
+
+    <div class="accent-card teal" style="margin-bottom: 12px;">
+      <div class="info-label">Use a simple queue when…</div>
+      <p>You need straightforward FIFO behavior and the queue size is unbounded or you're using a linked-list implementation. Ideal for BFS traversals, task queues where order of arrival matters, and message passing between producer/consumer threads.</p>
+    </div>
+    <div class="accent-card purple" style="margin-bottom: 12px;">
+      <div class="info-label">Use a circular queue when…</div>
+      <p>You have a fixed-size buffer and need to maximize memory reuse. Common in embedded systems with limited memory, OS kernel buffers, real-time streaming (audio/video frames), and any scenario where old data can be safely overwritten by new data.</p>
+    </div>
+    <div class="accent-card blue" style="margin-bottom: 12px;">
+      <div class="info-label">Use a deque when…</div>
+      <p>You need efficient access at both ends. Critical for sliding window algorithms (finding min/max in a window), implementing both stacks and queues with a single data structure, work-stealing schedulers in parallel computing, and maintaining a recent-history buffer that can be trimmed from either end.</p>
+    </div>
+    <div class="accent-card coral" style="margin-bottom: 12px;">
+      <div class="info-label">Use a priority queue when…</div>
+      <p>Elements have varying urgency and the most important item should always be served next. Essential for shortest-path algorithms (Dijkstra, A*), event-driven simulations where events at different times must be processed in chronological order, hospital triage, and any ranking or top-K problem.</p>
+    </div>
+
+    <div class="info-card full" style="background: var(--bg2); border-radius: 10px; padding: 1.25rem; margin-top: 1.5rem;">
+      <div class="info-label">Common pitfall</div>
+      <p>Don't use a priority queue when a simple sort suffices. If you insert all elements before any extraction, sorting the array once — O(n log n) — is simpler and equally fast compared to n insertions into a heap. Priority queues shine when insertions and extractions are <strong>interleaved</strong> over time.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Queue Data Structures — Reference Documentation</p>
+    <p style="margin-top: 4px;">Generated with Claude · Anthropic</p>
+  </div>
+
+</div>
+</body>
+</html>
