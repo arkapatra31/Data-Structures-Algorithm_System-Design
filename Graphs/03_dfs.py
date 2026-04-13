@@ -19,20 +19,18 @@ def dfs_iterative(graph, start):
     Returns:
         list — visit order
     """
-    visited = set()
+
+    visited = set([start])
     stack = [start]
     order = []
-
     while stack:
         vertex = stack.pop()           # LIFO — take from the top
-        if vertex not in visited:
-            visited.add(vertex)
-            order.append(vertex)
+        order.append(vertex)
 
-            # Reverse so we visit leftmost neighbor first
-            for neighbor in reversed(graph[vertex]):
-                if neighbor not in visited:
-                    stack.append(neighbor)
+        for neighbor in reversed(graph[vertex]):
+            if neighbor not in visited:
+                visited.add(neighbor)
+                stack.append(neighbor)
 
     return order
 
