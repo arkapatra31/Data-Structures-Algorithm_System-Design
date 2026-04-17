@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursion in Python — Zero to Hero</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0e13;--bg2:#13161d;--bg3:#1a1e28;--card:#181c26;
+  --text:#e4e2db;--muted:#8b8a85;--dim:#5a5955;
+  --accent:#7c6aef;--accent2:#a78bfa;--accent-dim:rgba(124,106,239,.12);
+  --green:#34d399;--green-dim:rgba(52,211,153,.1);
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,.1);
+  --coral:#f87171;--coral-dim:rgba(248,113,113,.1);
+  --blue:#60a5fa;--blue-dim:rgba(96,165,250,.1);
+  --teal:#2dd4bf;--pink:#f472b6;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Outfit',system-ui,sans-serif;
+  --serif:'Source Serif 4',Georgia,serif;
+  --radius:10px;
+}
+html{scroll-behavior:smooth;background:var(--bg);color:var(--text);font-family:var(--sans)}
+body{max-width:880px;margin:0 auto;padding:2rem 1.5rem 6rem;line-height:1.75}
+
+/* ─── Hero ─── */
+.hero{text-align:center;padding:5rem 1rem 4rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 40%,rgba(124,106,239,.15),transparent 70%);pointer-events:none}
+.hero h1{font-size:clamp(2.4rem,6vw,3.8rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;background:linear-gradient(135deg,#e4e2db 30%,var(--accent2) 70%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero .sub{font-size:1.15rem;color:var(--muted);margin-top:.75rem;font-weight:300}
+.badge{display:inline-block;background:var(--accent-dim);color:var(--accent2);font-size:.75rem;font-weight:600;padding:.35rem .9rem;border-radius:20px;margin-top:1.2rem;letter-spacing:.04em;text-transform:uppercase;border:1px solid rgba(124,106,239,.2)}
+
+/* ─── TOC ─── */
+.toc{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:1.75rem 2rem;margin:2rem 0 3rem}
+.toc h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:1rem;font-weight:600}
+.toc ol{list-style:none;counter-reset:toc;display:grid;grid-template-columns:1fr 1fr;gap:.5rem .5rem}
+@media(max-width:600px){.toc ol{grid-template-columns:1fr}}
+.toc li{counter-increment:toc}
+.toc a{color:var(--text);text-decoration:none;font-size:.95rem;display:flex;align-items:center;gap:.6rem;padding:.4rem .6rem;border-radius:6px;transition:background .15s}
+.toc a:hover{background:var(--accent-dim)}
+.toc a::before{content:counter(toc,decimal-leading-zero);font-family:var(--mono);font-size:.75rem;color:var(--accent);font-weight:500;min-width:1.6rem}
+
+/* ─── Sections ─── */
+section{margin-bottom:3.5rem}
+h2.section-title{font-size:1.6rem;font-weight:700;margin-bottom:1.5rem;padding-bottom:.5rem;border-bottom:2px solid rgba(124,106,239,.25);display:flex;align-items:center;gap:.7rem}
+h2.section-title .num{font-family:var(--mono);font-size:.85rem;color:var(--accent);background:var(--accent-dim);width:2rem;height:2rem;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;flex-shrink:0}
+h3{font-size:1.15rem;font-weight:600;margin:2rem 0 .75rem;color:var(--accent2)}
+p{margin-bottom:1rem;color:var(--text)}
+p.note{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:.95rem}
+strong{color:#fff;font-weight:600}
+
+/* ─── Code blocks ─── */
+pre{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:1.25rem 1.5rem;overflow-x:auto;margin:1rem 0 1.5rem;font-family:var(--mono);font-size:.82rem;line-height:1.7;color:#c9d1d9;position:relative}
+pre .label{position:absolute;top:0;right:0;background:var(--accent-dim);color:var(--accent);font-size:.65rem;font-weight:600;padding:.25rem .65rem;border-radius:0 var(--radius) 0 6px;text-transform:uppercase;letter-spacing:.06em}
+code{font-family:var(--mono);font-size:.85em}
+p code,li code{background:var(--bg3);padding:.15rem .45rem;border-radius:4px;font-size:.82em;color:var(--accent2)}
+
+/* Syntax colors */
+.kw{color:#ff7b72}.fn{color:#d2a8ff}.st{color:#a5d6ff}.cm{color:#8b949e;font-style:italic}.nu{color:#79c0ff}.op{color:#ff7b72}.bi{color:#ffa657}.dc{color:#7ee787}
+
+/* ─── Concept cards ─── */
+.concept{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0}
+@media(max-width:600px){.concept{grid-template-columns:1fr}}
+.concept .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:1.25rem 1.5rem}
+.concept .card h4{font-size:.85rem;font-weight:600;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+.concept .card p{font-size:.9rem;color:var(--muted);margin:0}
+
+/* ─── Diagram containers ─── */
+.diagram{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:1.5rem;margin:1.5rem 0;overflow-x:auto}
+.diagram svg{display:block;margin:0 auto}
+.diagram .caption{text-align:center;font-size:.8rem;color:var(--muted);margin-top:1rem}
+
+/* ─── Table ─── */
+table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.9rem}
+th{text-align:left;padding:.6rem .8rem;font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid rgba(255,255,255,.08)}
+td{padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+/* ─── Callout boxes ─── */
+.callout{border-radius:var(--radius);padding:1.25rem 1.5rem;margin:1.5rem 0;border-left:3px solid}
+.callout.tip{background:var(--green-dim);border-color:var(--green)}
+.callout.tip .tag{color:var(--green)}
+.callout.warn{background:var(--amber-dim);border-color:var(--amber)}
+.callout.warn .tag{color:var(--amber)}
+.callout.danger{background:var(--coral-dim);border-color:var(--coral)}
+.callout.danger .tag{color:var(--coral)}
+.callout .tag{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;display:block}
+.callout p{margin:0;font-size:.92rem}
+
+/* ─── Complexity pills ─── */
+.complexity{display:inline-flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
+.complexity span{font-family:var(--mono);font-size:.75rem;padding:.25rem .65rem;border-radius:20px;font-weight:500}
+.complexity .time{background:var(--blue-dim);color:var(--blue)}
+.complexity .space{background:var(--accent-dim);color:var(--accent2)}
+
+/* ─── Roadmap ─── */
+.roadmap{display:flex;flex-direction:column;gap:0;margin:1.5rem 0}
+.roadmap .level{background:var(--card);border:1px solid rgba(255,255,255,.06);padding:1.2rem 1.5rem;position:relative}
+.roadmap .level:first-child{border-radius:var(--radius) var(--radius) 0 0}
+.roadmap .level:last-child{border-radius:0 0 var(--radius) var(--radius)}
+.roadmap .level+.level{border-top:none}
+.roadmap .level .tag{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;display:block}
+.roadmap .level .problems{font-family:var(--mono);font-size:.82rem;color:var(--muted);line-height:1.8}
+.roadmap .level:nth-child(1) .tag{color:var(--green)}
+.roadmap .level:nth-child(2) .tag{color:var(--blue)}
+.roadmap .level:nth-child(3) .tag{color:var(--amber)}
+.roadmap .level:nth-child(4) .tag{color:var(--pink)}
+.roadmap .level:nth-child(5) .tag{color:var(--accent2)}
+.roadmap .connector{width:2px;height:16px;background:var(--dim);margin:0 auto;opacity:.4}
+
+/* ─── File list ─── */
+.file-list{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:1rem 0}
+@media(max-width:600px){.file-list{grid-template-columns:1fr}}
+.file-item{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:.7rem 1rem;font-family:var(--mono);font-size:.82rem;color:var(--accent2);display:flex;align-items:center;gap:.5rem}
+.file-item .icon{color:var(--green);font-size:.9rem}
+
+/* ─── Scroll ─── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--dim);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════ HERO ════════════════════ -->
+<header class="hero">
+  <h1>Recursion in Python</h1>
+  <p class="sub">A complete guide from fundamentals to advanced DSA patterns</p>
+  <span class="badge">Data Structures & Algorithms</span>
+</header>
+
+<!-- ════════════════════ TOC ════════════════════ -->
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#what">What is recursion?</a></li>
+    <li><a href="#template">The recursion template</a></li>
+    <li><a href="#callstack">How the call stack works</a></li>
+    <li><a href="#basics">Classic building blocks</a></li>
+    <li><a href="#ds">Recursion on data structures</a></li>
+    <li><a href="#dnc">Divide and conquer</a></li>
+    <li><a href="#backtracking">Backtracking</a></li>
+    <li><a href="#dp">Recursion → dynamic programming</a></li>
+    <li><a href="#iterative">Converting to iteration</a></li>
+    <li><a href="#pitfalls">Common pitfalls</a></li>
+    <li><a href="#roadmap">Practice roadmap</a></li>
+    <li><a href="#files">Code files reference</a></li>
+  </ol>
+</nav>
+
+<!-- ════════════════════ SECTION 1 ════════════════════ -->
+<section id="what">
+<h2 class="section-title"><span class="num">01</span> What is recursion?</h2>
+<p>A recursive function is a function that <strong>calls itself</strong>. Every recursive function has exactly two parts:</p>
+<div class="concept">
+  <div class="card">
+    <h4 style="color:var(--green)">&#9632; Base case</h4>
+    <p>The simplest version of the problem that can be answered directly, without further recursion. This is your <strong>exit condition</strong>.</p>
+  </div>
+  <div class="card">
+    <h4 style="color:var(--accent2)">&#9632; Recursive case</h4>
+    <p>Break the problem into a <strong>smaller</strong> version of itself, call the function on that smaller input, and combine the result.</p>
+  </div>
+</div>
+<pre><span class="label">Python</span>
+<span class="kw">def</span> <span class="fn">factorial</span>(n):
+    <span class="kw">if</span> n <= <span class="nu">1</span>:        <span class="cm"># base case</span>
+        <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">return</span> n * factorial(n - <span class="nu">1</span>)  <span class="cm"># recursive case</span>
+</pre>
+<div class="callout tip">
+  <span class="tag">Key insight</span>
+  <p>The <strong>recursive leap of faith</strong>: assume the function already works correctly for smaller inputs. You only need to handle one level — the base case and one step of reduction.</p>
+</div>
+</section>
+
+<!-- ════════════════════ SECTION 2 ════════════════════ -->
+<section id="template">
+<h2 class="section-title"><span class="num">02</span> The recursion template</h2>
+<p>Nearly every recursive function follows this three-part skeleton. Master this shape and you can tackle any recursive problem:</p>
+<pre><span class="label">Template</span>
+<span class="kw">def</span> <span class="fn">solve</span>(problem):
+    <span class="cm"># 1. Base case — smallest version of the problem</span>
+    <span class="kw">if</span> problem is trivial:
+        <span class="kw">return</span> trivial_answer
+
+    <span class="cm"># 2. Recursive case — shrink the problem</span>
+    smaller = break_down(problem)
+    sub_result = solve(smaller)
+
+    <span class="cm"># 3. Combine — use sub-result to build the answer</span>
+    <span class="kw">return</span> combine(sub_result)
+</pre>
+</section>
+
+<!-- ════════════════════ SECTION 3 ════════════════════ -->
+<section id="callstack">
+<h2 class="section-title"><span class="num">03</span> How the call stack works</h2>
+<p>Each recursive call creates a new <strong>stack frame</strong>. The function pauses at each level, waiting for the deeper call to return. Once the base case is hit, results propagate back up — this is called <strong>unwinding</strong>.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 620 340" width="100%">
+  <!-- Winding phase -->
+  <text x="140" y="22" font-family="Outfit" font-size="12" fill="#8b8a85" text-anchor="middle" font-weight="600">WINDING (calls go deeper)</text>
+  <rect x="40" y="35" width="200" height="36" rx="6" fill="rgba(124,106,239,.15)" stroke="rgba(124,106,239,.3)" stroke-width="1"/>
+  <text x="140" y="58" font-family="JetBrains Mono" font-size="12" fill="#a78bfa" text-anchor="middle">factorial(5)</text>
+  <rect x="40" y="80" width="200" height="36" rx="6" fill="rgba(96,165,250,.12)" stroke="rgba(96,165,250,.25)" stroke-width="1"/>
+  <text x="140" y="103" font-family="JetBrains Mono" font-size="12" fill="#60a5fa" text-anchor="middle">factorial(4)</text>
+  <rect x="40" y="125" width="200" height="36" rx="6" fill="rgba(45,212,191,.1)" stroke="rgba(45,212,191,.25)" stroke-width="1"/>
+  <text x="140" y="148" font-family="JetBrains Mono" font-size="12" fill="#2dd4bf" text-anchor="middle">factorial(3)</text>
+  <rect x="40" y="170" width="200" height="36" rx="6" fill="rgba(52,211,153,.1)" stroke="rgba(52,211,153,.25)" stroke-width="1"/>
+  <text x="140" y="193" font-family="JetBrains Mono" font-size="12" fill="#34d399" text-anchor="middle">factorial(2)</text>
+  <rect x="40" y="215" width="200" height="36" rx="6" fill="rgba(245,158,11,.1)" stroke="rgba(245,158,11,.25)" stroke-width="1"/>
+  <text x="140" y="238" font-family="JetBrains Mono" font-size="12" fill="#f59e0b" text-anchor="middle">factorial(1) → 1</text>
+  <!-- Arrow down -->
+  <line x1="252" y1="50" x2="252" y2="240" stroke="#5a5955" stroke-width="1" stroke-dasharray="4 3"/>
+  <polygon points="252,248 248,240 256,240" fill="#5a5955"/>
+
+  <!-- Unwinding phase -->
+  <text x="470" y="22" font-family="Outfit" font-size="12" fill="#8b8a85" text-anchor="middle" font-weight="600">UNWINDING (results return)</text>
+  <rect x="370" y="215" width="200" height="36" rx="6" fill="rgba(245,158,11,.1)" stroke="rgba(245,158,11,.25)" stroke-width="1"/>
+  <text x="470" y="238" font-family="JetBrains Mono" font-size="11" fill="#f59e0b" text-anchor="middle">returns 1</text>
+  <rect x="370" y="170" width="200" height="36" rx="6" fill="rgba(52,211,153,.1)" stroke="rgba(52,211,153,.25)" stroke-width="1"/>
+  <text x="470" y="193" font-family="JetBrains Mono" font-size="11" fill="#34d399" text-anchor="middle">2 × 1 = 2</text>
+  <rect x="370" y="125" width="200" height="36" rx="6" fill="rgba(45,212,191,.1)" stroke="rgba(45,212,191,.25)" stroke-width="1"/>
+  <text x="470" y="148" font-family="JetBrains Mono" font-size="11" fill="#2dd4bf" text-anchor="middle">3 × 2 = 6</text>
+  <rect x="370" y="80" width="200" height="36" rx="6" fill="rgba(96,165,250,.12)" stroke="rgba(96,165,250,.25)" stroke-width="1"/>
+  <text x="470" y="103" font-family="JetBrains Mono" font-size="11" fill="#60a5fa" text-anchor="middle">4 × 6 = 24</text>
+  <rect x="370" y="35" width="200" height="36" rx="6" fill="rgba(124,106,239,.15)" stroke="rgba(124,106,239,.3)" stroke-width="1"/>
+  <text x="470" y="58" font-family="JetBrains Mono" font-size="11" fill="#a78bfa" text-anchor="middle">5 × 24 = 120</text>
+  <!-- Arrow up -->
+  <line x1="358" y1="240" x2="358" y2="50" stroke="#5a5955" stroke-width="1" stroke-dasharray="4 3"/>
+  <polygon points="358,42 354,50 362,50" fill="#5a5955"/>
+
+  <!-- Final result -->
+  <rect x="210" y="285" width="200" height="40" rx="8" fill="rgba(124,106,239,.2)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="310" y="310" font-family="Outfit" font-size="14" fill="#e4e2db" text-anchor="middle" font-weight="600">Result: 120</text>
+</svg>
+<p class="caption">factorial(5) call stack: each frame waits for the one below it</p>
+</div>
+</section>
+
+<!-- ════════════════════ SECTION 4 ════════════════════ -->
+<section id="basics">
+<h2 class="section-title"><span class="num">04</span> Classic building blocks</h2>
+
+<h3>Sum of a list</h3>
+<div class="complexity"><span class="time">Time: O(n)</span><span class="space">Space: O(n)</span></div>
+<pre><span class="label">Python</span>
+<span class="kw">def</span> <span class="fn">recursive_sum</span>(arr):
+    <span class="kw">if not</span> arr:          <span class="cm"># base case: empty list</span>
+        <span class="kw">return</span> <span class="nu">0</span>
+    <span class="kw">return</span> arr[<span class="nu">0</span>] + recursive_sum(arr[<span class="nu">1</span>:])  <span class="cm"># first + sum of rest</span>
+</pre>
+
+<h3>Fibonacci — naive vs. memoized</h3>
+<pre><span class="label">Python</span>
+<span class="cm"># Naive — O(2^n), very slow</span>
+<span class="kw">def</span> <span class="fn">fib</span>(n):
+    <span class="kw">if</span> n <= <span class="nu">1</span>:
+        <span class="kw">return</span> n
+    <span class="kw">return</span> fib(n - <span class="nu">1</span>) + fib(n - <span class="nu">2</span>)
+
+<span class="cm"># Memoized — O(n), each subproblem solved once</span>
+<span class="kw">from</span> <span class="bi">functools</span> <span class="kw">import</span> lru_cache
+
+<span class="dc">@lru_cache</span>(maxsize=<span class="kw">None</span>)
+<span class="kw">def</span> <span class="fn">fib_memo</span>(n):
+    <span class="kw">if</span> n <= <span class="nu">1</span>:
+        <span class="kw">return</span> n
+    <span class="kw">return</span> fib_memo(n - <span class="nu">1</span>) + fib_memo(n - <span class="nu">2</span>)
+</pre>
+
+<div class="diagram">
+<svg viewBox="0 0 580 240" width="100%">
+  <text x="290" y="18" font-family="Outfit" font-size="12" fill="#8b8a85" text-anchor="middle" font-weight="600">FIBONACCI RECURSION TREE — fib(5)</text>
+  <!-- fib(5) -->
+  <rect x="240" y="28" width="70" height="28" rx="5" fill="rgba(124,106,239,.18)" stroke="rgba(124,106,239,.35)" stroke-width="1"/>
+  <text x="275" y="47" font-family="JetBrains Mono" font-size="10" fill="#a78bfa" text-anchor="middle">fib(5)</text>
+  <!-- Lines L1 -->
+  <line x1="258" y1="56" x2="170" y2="76" stroke="#5a5955" stroke-width=".7"/>
+  <line x1="292" y1="56" x2="400" y2="76" stroke="#5a5955" stroke-width=".7"/>
+  <!-- fib(4), fib(3) dup -->
+  <rect x="120" y="76" width="70" height="28" rx="5" fill="rgba(96,165,250,.14)" stroke="rgba(96,165,250,.3)" stroke-width="1"/>
+  <text x="155" y="95" font-family="JetBrains Mono" font-size="10" fill="#60a5fa" text-anchor="middle">fib(4)</text>
+  <rect x="370" y="76" width="70" height="28" rx="5" fill="rgba(248,113,113,.14)" stroke="rgba(248,113,113,.3)" stroke-width="1"/>
+  <text x="405" y="95" font-family="JetBrains Mono" font-size="10" fill="#f87171" text-anchor="middle">fib(3)</text>
+  <!-- Lines L2 -->
+  <line x1="138" y1="104" x2="82" y2="124" stroke="#5a5955" stroke-width=".7"/>
+  <line x1="172" y1="104" x2="220" y2="124" stroke="#5a5955" stroke-width=".7"/>
+  <line x1="388" y1="104" x2="345" y2="124" stroke="#5a5955" stroke-width=".7"/>
+  <line x1="422" y1="104" x2="460" y2="124" stroke="#5a5955" stroke-width=".7"/>
+  <!-- Level 2 nodes -->
+  <rect x="42" y="124" width="70" height="28" rx="5" fill="rgba(248,113,113,.14)" stroke="rgba(248,113,113,.3)" stroke-width="1"/>
+  <text x="77" y="143" font-family="JetBrains Mono" font-size="10" fill="#f87171" text-anchor="middle">fib(3)</text>
+  <rect x="190" y="124" width="70" height="28" rx="5" fill="rgba(248,113,113,.14)" stroke="rgba(248,113,113,.3)" stroke-width="1"/>
+  <text x="225" y="143" font-family="JetBrains Mono" font-size="10" fill="#f87171" text-anchor="middle">fib(2)</text>
+  <rect x="310" y="124" width="70" height="28" rx="5" fill="rgba(248,113,113,.14)" stroke="rgba(248,113,113,.3)" stroke-width="1"/>
+  <text x="345" y="143" font-family="JetBrains Mono" font-size="10" fill="#f87171" text-anchor="middle">fib(2)</text>
+  <rect x="435" y="124" width="60" height="28" rx="5" fill="rgba(52,211,153,.12)" stroke="rgba(52,211,153,.25)" stroke-width="1"/>
+  <text x="465" y="143" font-family="JetBrains Mono" font-size="10" fill="#34d399" text-anchor="middle">fib(1)</text>
+  <!-- Legend -->
+  <rect x="160" y="195" width="12" height="12" rx="3" fill="rgba(248,113,113,.2)" stroke="rgba(248,113,113,.4)" stroke-width="1"/>
+  <text x="180" y="205" font-family="Outfit" font-size="11" fill="#8b8a85">Duplicate computation</text>
+  <rect x="310" y="195" width="12" height="12" rx="3" fill="rgba(52,211,153,.15)" stroke="rgba(52,211,153,.3)" stroke-width="1"/>
+  <text x="330" y="205" font-family="Outfit" font-size="11" fill="#8b8a85">Base case</text>
+</svg>
+<p class="caption">Coral nodes are recomputed — memoization eliminates this waste</p>
+</div>
+</section>
+
+<!-- ════════════════════ SECTION 5 ════════════════════ -->
+<section id="ds">
+<h2 class="section-title"><span class="num">05</span> Recursion on data structures</h2>
+<p>Recursive data structures — trees, linked lists, graphs — naturally lend themselves to recursive algorithms.</p>
+
+<h3>Linked list: reverse</h3>
+<div class="complexity"><span class="time">Time: O(n)</span><span class="space">Space: O(n)</span></div>
+<pre><span class="label">Python</span>
+<span class="kw">class</span> <span class="fn">ListNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="bi">self</span>, val=<span class="nu">0</span>, next=<span class="kw">None</span>):
+        <span class="bi">self</span>.val = val
+        <span class="bi">self</span>.next = next
+
+<span class="kw">def</span> <span class="fn">reverse</span>(head):
+    <span class="kw">if not</span> head <span class="kw">or not</span> head.next:   <span class="cm"># base case: 0 or 1 node</span>
+        <span class="kw">return</span> head
+    new_head = reverse(head.next)   <span class="cm"># reverse the rest</span>
+    head.next.next = head           <span class="cm"># point next node back to me</span>
+    head.next = <span class="kw">None</span>                <span class="cm"># break forward link</span>
+    <span class="kw">return</span> new_head
+</pre>
+
+<h3>Binary tree operations</h3>
+<div class="complexity"><span class="time">Time: O(n)</span><span class="space">Space: O(h) — h = tree height</span></div>
+<pre><span class="label">Python</span>
+<span class="kw">class</span> <span class="fn">TreeNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="bi">self</span>, val=<span class="nu">0</span>, left=<span class="kw">None</span>, right=<span class="kw">None</span>):
+        <span class="bi">self</span>.val = val
+        <span class="bi">self</span>.left = left
+        <span class="bi">self</span>.right = right
+
+<span class="cm"># Inorder traversal (left → root → right)</span>
+<span class="kw">def</span> <span class="fn">inorder</span>(root):
+    <span class="kw">if not</span> root:
+        <span class="kw">return</span> []
+    <span class="kw">return</span> inorder(root.left) + [root.val] + inorder(root.right)
+
+<span class="cm"># Max depth of a binary tree</span>
+<span class="kw">def</span> <span class="fn">max_depth</span>(root):
+    <span class="kw">if not</span> root:
+        <span class="kw">return</span> <span class="nu">0</span>
+    <span class="kw">return</span> <span class="nu">1</span> + <span class="bi">max</span>(max_depth(root.left), max_depth(root.right))
+
+<span class="cm"># Invert (mirror) a binary tree</span>
+<span class="kw">def</span> <span class="fn">invert_tree</span>(root):
+    <span class="kw">if not</span> root:
+        <span class="kw">return None</span>
+    root.left, root.right = invert_tree(root.right), invert_tree(root.left)
+    <span class="kw">return</span> root
+</pre>
+
+<div class="diagram">
+<svg viewBox="0 0 560 260" width="100%">
+  <text x="280" y="18" font-family="Outfit" font-size="12" fill="#8b8a85" text-anchor="middle" font-weight="600">max_depth COMPUTED BOTTOM-UP</text>
+  <!-- Root 1 -->
+  <circle cx="280" cy="55" r="22" fill="rgba(124,106,239,.18)" stroke="rgba(124,106,239,.35)" stroke-width="1"/>
+  <text x="280" y="60" font-family="JetBrains Mono" font-size="12" fill="#a78bfa" text-anchor="middle">1</text>
+  <text x="310" y="52" font-family="JetBrains Mono" font-size="10" fill="#5a5955">d=3</text>
+  <!-- Edges -->
+  <line x1="262" y1="72" x2="165" y2="110" stroke="#5a5955" stroke-width=".7"/>
+  <line x1="298" y1="72" x2="395" y2="110" stroke="#5a5955" stroke-width=".7"/>
+  <!-- Node 2 -->
+  <circle cx="150" cy="125" r="22" fill="rgba(96,165,250,.14)" stroke="rgba(96,165,250,.3)" stroke-width="1"/>
+  <text x="150" y="130" font-family="JetBrains Mono" font-size="12" fill="#60a5fa" text-anchor="middle">2</text>
+  <text x="180" y="122" font-family="JetBrains Mono" font-size="10" fill="#5a5955">d=2</text>
+  <!-- Node 3 -->
+  <circle cx="410" cy="125" r="22" fill="rgba(96,165,250,.14)" stroke="rgba(96,165,250,.3)" stroke-width="1"/>
+  <text x="410" y="130" font-family="JetBrains Mono" font-size="12" fill="#60a5fa" text-anchor="middle">3</text>
+  <text x="440" y="122" font-family="JetBrains Mono" font-size="10" fill="#5a5955">d=1</text>
+  <!-- Edges L2 -->
+  <line x1="132" y1="142" x2="82" y2="176" stroke="#5a5955" stroke-width=".7"/>
+  <line x1="168" y1="142" x2="218" y2="176" stroke="#5a5955" stroke-width=".7"/>
+  <line x1="392" y1="142" x2="355" y2="176" stroke="#5a5955" stroke-width=".7"/>
+  <!-- Leaves -->
+  <circle cx="70" cy="190" r="18" fill="rgba(52,211,153,.12)" stroke="rgba(52,211,153,.25)" stroke-width="1"/>
+  <text x="70" y="195" font-family="JetBrains Mono" font-size="11" fill="#34d399" text-anchor="middle">4</text>
+  <text x="96" y="188" font-family="JetBrains Mono" font-size="10" fill="#5a5955">d=1</text>
+  <circle cx="230" cy="190" r="18" fill="rgba(52,211,153,.12)" stroke="rgba(52,211,153,.25)" stroke-width="1"/>
+  <text x="230" y="195" font-family="JetBrains Mono" font-size="11" fill="#34d399" text-anchor="middle">5</text>
+  <text x="256" y="188" font-family="JetBrains Mono" font-size="10" fill="#5a5955">d=0</text>
+  <circle cx="345" cy="190" r="18" fill="rgba(52,211,153,.12)" stroke="rgba(52,211,153,.25)" stroke-width="1"/>
+  <text x="345" y="195" font-family="JetBrains Mono" font-size="11" fill="#34d399" text-anchor="middle">6</text>
+  <text x="371" y="188" font-family="JetBrains Mono" font-size="10" fill="#5a5955">d=0</text>
+  <!-- Formula -->
+  <text x="280" y="240" font-family="JetBrains Mono" font-size="11" fill="#8b8a85" text-anchor="middle">depth = 1 + max(left_depth, right_depth)</text>
+</svg>
+<p class="caption">Leaves return 0, each parent adds 1 + max of children</p>
+</div>
+</section>
+
+<!-- ════════════════════ SECTION 6 ════════════════════ -->
+<section id="dnc">
+<h2 class="section-title"><span class="num">06</span> Divide and conquer</h2>
+<p>Split the problem in half, solve each half recursively, combine results. This powers the fastest sorting and searching algorithms.</p>
+
+<h3>Merge sort</h3>
+<div class="complexity"><span class="time">Time: O(n log n)</span><span class="space">Space: O(n)</span></div>
+<pre><span class="label">Python</span>
+<span class="kw">def</span> <span class="fn">merge_sort</span>(arr):
+    <span class="kw">if</span> <span class="bi">len</span>(arr) <= <span class="nu">1</span>:             <span class="cm"># base case</span>
+        <span class="kw">return</span> arr
+
+    mid = <span class="bi">len</span>(arr) // <span class="nu">2</span>
+    left = merge_sort(arr[:mid])  <span class="cm"># sort left half</span>
+    right = merge_sort(arr[mid:]) <span class="cm"># sort right half</span>
+    <span class="kw">return</span> merge(left, right)     <span class="cm"># combine sorted halves</span>
+
+<span class="kw">def</span> <span class="fn">merge</span>(left, right):
+    result = []
+    i = j = <span class="nu">0</span>
+    <span class="kw">while</span> i < <span class="bi">len</span>(left) <span class="kw">and</span> j < <span class="bi">len</span>(right):
+        <span class="kw">if</span> left[i] <= right[j]:
+            result.append(left[i]); i += <span class="nu">1</span>
+        <span class="kw">else</span>:
+            result.append(right[j]); j += <span class="nu">1</span>
+    result.extend(left[i:])
+    result.extend(right[j:])
+    <span class="kw">return</span> result
+</pre>
+
+<h3>Binary search (recursive)</h3>
+<div class="complexity"><span class="time">Time: O(log n)</span><span class="space">Space: O(log n)</span></div>
+<pre><span class="label">Python</span>
+<span class="kw">def</span> <span class="fn">binary_search</span>(arr, target, lo=<span class="nu">0</span>, hi=<span class="kw">None</span>):
+    <span class="kw">if</span> hi <span class="kw">is None</span>:
+        hi = <span class="bi">len</span>(arr) - <span class="nu">1</span>
+    <span class="kw">if</span> lo > hi:
+        <span class="kw">return</span> -<span class="nu">1</span>                           <span class="cm"># not found</span>
+
+    mid = (lo + hi) // <span class="nu">2</span>
+    <span class="kw">if</span> arr[mid] == target:
+        <span class="kw">return</span> mid                          <span class="cm"># found</span>
+    <span class="kw">elif</span> arr[mid] < target:
+        <span class="kw">return</span> binary_search(arr, target, mid + <span class="nu">1</span>, hi)
+    <span class="kw">else</span>:
+        <span class="kw">return</span> binary_search(arr, target, lo, mid - <span class="nu">1</span>)
+</pre>
+</section>
+
+<!-- ════════════════════ SECTION 7 ════════════════════ -->
+<section id="backtracking">
+<h2 class="section-title"><span class="num">07</span> Backtracking</h2>
+<p>Backtracking is recursion's most powerful pattern for combinatorics and constraint satisfaction. The three-step cycle: <strong>choose → explore → un-choose</strong>.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 560 200" width="100%">
+  <text x="280" y="18" font-family="Outfit" font-size="12" fill="#8b8a85" text-anchor="middle" font-weight="600">THE BACKTRACKING PATTERN</text>
+  <!-- Step boxes -->
+  <rect x="40" y="40" width="140" height="55" rx="8" fill="rgba(52,211,153,.1)" stroke="rgba(52,211,153,.3)" stroke-width="1"/>
+  <text x="110" y="62" font-family="Outfit" font-size="13" fill="#34d399" text-anchor="middle" font-weight="600">1. Choose</text>
+  <text x="110" y="80" font-family="JetBrains Mono" font-size="10" fill="#8b8a85" text-anchor="middle">path.append(x)</text>
+  <rect x="210" y="40" width="140" height="55" rx="8" fill="rgba(96,165,250,.12)" stroke="rgba(96,165,250,.3)" stroke-width="1"/>
+  <text x="280" y="62" font-family="Outfit" font-size="13" fill="#60a5fa" text-anchor="middle" font-weight="600">2. Explore</text>
+  <text x="280" y="80" font-family="JetBrains Mono" font-size="10" fill="#8b8a85" text-anchor="middle">backtrack(...)</text>
+  <rect x="380" y="40" width="140" height="55" rx="8" fill="rgba(248,113,113,.1)" stroke="rgba(248,113,113,.3)" stroke-width="1"/>
+  <text x="450" y="62" font-family="Outfit" font-size="13" fill="#f87171" text-anchor="middle" font-weight="600">3. Un-choose</text>
+  <text x="450" y="80" font-family="JetBrains Mono" font-size="10" fill="#8b8a85" text-anchor="middle">path.pop()</text>
+  <!-- Arrows -->
+  <line x1="180" y1="68" x2="208" y2="68" stroke="#5a5955" stroke-width="1" marker-end="url(#arrowG)"/>
+  <line x1="350" y1="68" x2="378" y2="68" stroke="#5a5955" stroke-width="1" marker-end="url(#arrowG)"/>
+  <!-- Cycle arrow -->
+  <path d="M450 95 C450 140, 110 140, 110 95" fill="none" stroke="#5a5955" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrowG)"/>
+  <text x="280" y="150" font-family="Outfit" font-size="11" fill="#5a5955" text-anchor="middle">repeat for each candidate</text>
+  <defs><marker id="arrowG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M2 2L8 5L2 8" fill="none" stroke="#5a5955" stroke-width="1.5"/></marker></defs>
+</svg>
+</div>
+
+<h3>Permutations</h3>
+<pre><span class="label">Python</span>
+<span class="kw">def</span> <span class="fn">permutations</span>(nums):
+    result = []
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(path, remaining):
+        <span class="kw">if not</span> remaining:           <span class="cm"># base case: used all</span>
+            result.append(path[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="bi">len</span>(remaining)):
+            path.append(remaining[i])           <span class="cm"># choose</span>
+            backtrack(path, remaining[:i] + remaining[i+<span class="nu">1</span>:])  <span class="cm"># explore</span>
+            path.pop()                           <span class="cm"># un-choose!</span>
+
+    backtrack([], nums)
+    <span class="kw">return</span> result
+</pre>
+
+<h3>N-Queens</h3>
+<pre><span class="label">Python</span>
+<span class="kw">def</span> <span class="fn">solve_n_queens</span>(n):
+    results = []
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(row, cols, diag1, diag2, board):
+        <span class="kw">if</span> row == n:
+            results.append([<span class="st">""</span>.join(r) <span class="kw">for</span> r <span class="kw">in</span> board])
+            <span class="kw">return</span>
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="bi">range</span>(n):
+            <span class="kw">if</span> col <span class="kw">in</span> cols <span class="kw">or</span> (row-col) <span class="kw">in</span> diag1 <span class="kw">or</span> (row+col) <span class="kw">in</span> diag2:
+                <span class="kw">continue</span>                  <span class="cm"># prune</span>
+            board[row][col] = <span class="st">"Q"</span>         <span class="cm"># choose</span>
+            backtrack(row+<span class="nu">1</span>, cols|{col}, diag1|{row-col},
+                      diag2|{row+col}, board)  <span class="cm"># explore</span>
+            board[row][col] = <span class="st">"."</span>         <span class="cm"># un-choose</span>
+
+    backtrack(<span class="nu">0</span>, <span class="bi">set</span>(), <span class="bi">set</span>(), <span class="bi">set</span>(), [[<span class="st">"."</span>]*n <span class="kw">for</span> _ <span class="kw">in</span> <span class="bi">range</span>(n)])
+    <span class="kw">return</span> results
+</pre>
+</section>
+
+<!-- ════════════════════ SECTION 8 ════════════════════ -->
+<section id="dp">
+<h2 class="section-title"><span class="num">08</span> Recursion → dynamic programming</h2>
+<p>Every DP problem starts as a recursive solution. The optimization path:</p>
+
+<div class="diagram">
+<svg viewBox="0 0 600 70" width="100%">
+  <rect x="10" y="15" width="130" height="40" rx="6" fill="rgba(248,113,113,.12)" stroke="rgba(248,113,113,.3)" stroke-width="1"/>
+  <text x="75" y="40" font-family="Outfit" font-size="11" fill="#f87171" text-anchor="middle" font-weight="600">Brute-force</text>
+  <text x="160" y="38" font-family="Outfit" font-size="16" fill="#5a5955">→</text>
+  <rect x="175" y="15" width="130" height="40" rx="6" fill="rgba(245,158,11,.1)" stroke="rgba(245,158,11,.25)" stroke-width="1"/>
+  <text x="240" y="40" font-family="Outfit" font-size="11" fill="#f59e0b" text-anchor="middle" font-weight="600">Memoization</text>
+  <text x="325" y="38" font-family="Outfit" font-size="16" fill="#5a5955">→</text>
+  <rect x="340" y="15" width="130" height="40" rx="6" fill="rgba(96,165,250,.12)" stroke="rgba(96,165,250,.3)" stroke-width="1"/>
+  <text x="405" y="40" font-family="Outfit" font-size="11" fill="#60a5fa" text-anchor="middle" font-weight="600">Tabulation</text>
+  <text x="490" y="38" font-family="Outfit" font-size="16" fill="#5a5955">→</text>
+  <rect x="500" y="15" width="90" height="40" rx="6" fill="rgba(52,211,153,.1)" stroke="rgba(52,211,153,.25)" stroke-width="1"/>
+  <text x="545" y="40" font-family="Outfit" font-size="11" fill="#34d399" text-anchor="middle" font-weight="600">Optimized</text>
+</svg>
+</div>
+
+<h3>Climbing stairs — all four stages</h3>
+<pre><span class="label">Python</span>
+<span class="cm"># Step 1: Pure recursion — O(2^n)</span>
+<span class="kw">def</span> <span class="fn">climb</span>(n):
+    <span class="kw">if</span> n <= <span class="nu">1</span>: <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">return</span> climb(n - <span class="nu">1</span>) + climb(n - <span class="nu">2</span>)
+
+<span class="cm"># Step 2: Memoization (top-down) — O(n)</span>
+<span class="kw">def</span> <span class="fn">climb_memo</span>(n, memo={}):
+    <span class="kw">if</span> n <= <span class="nu">1</span>: <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">if</span> n <span class="kw">not in</span> memo:
+        memo[n] = climb_memo(n - <span class="nu">1</span>) + climb_memo(n - <span class="nu">2</span>)
+    <span class="kw">return</span> memo[n]
+
+<span class="cm"># Step 3: Tabulation (bottom-up) — O(n), no recursion</span>
+<span class="kw">def</span> <span class="fn">climb_tab</span>(n):
+    <span class="kw">if</span> n <= <span class="nu">1</span>: <span class="kw">return</span> <span class="nu">1</span>
+    dp = [<span class="nu">0</span>] * (n + <span class="nu">1</span>)
+    dp[<span class="nu">0</span>] = dp[<span class="nu">1</span>] = <span class="nu">1</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">2</span>, n + <span class="nu">1</span>):
+        dp[i] = dp[i-<span class="nu">1</span>] + dp[i-<span class="nu">2</span>]
+    <span class="kw">return</span> dp[n]
+
+<span class="cm"># Step 4: Space-optimized — O(n) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">climb_opt</span>(n):
+    a, b = <span class="nu">1</span>, <span class="nu">1</span>
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">2</span>, n + <span class="nu">1</span>):
+        a, b = b, a + b
+    <span class="kw">return</span> b
+</pre>
+</section>
+
+<!-- ════════════════════ SECTION 9 ════════════════════ -->
+<section id="iterative">
+<h2 class="section-title"><span class="num">09</span> Converting to iteration</h2>
+<p>Python has a default recursion limit of ~1000. For deep recursion, convert to iteration using an <strong>explicit stack</strong>:</p>
+<pre><span class="label">Python</span>
+<span class="kw">import</span> <span class="bi">sys</span>
+sys.setrecursionlimit(<span class="nu">10000</span>)  <span class="cm"># use with caution</span>
+
+<span class="cm"># Iterative inorder traversal using explicit stack</span>
+<span class="kw">def</span> <span class="fn">inorder_iterative</span>(root):
+    result, stack = [], []
+    curr = root
+    <span class="kw">while</span> curr <span class="kw">or</span> stack:
+        <span class="kw">while</span> curr:              <span class="cm"># go as far left as possible</span>
+            stack.append(curr)
+            curr = curr.left
+        curr = stack.pop()      <span class="cm"># process node</span>
+        result.append(curr.val)
+        curr = curr.right       <span class="cm"># then go right</span>
+    <span class="kw">return</span> result
+</pre>
+<div class="callout tip">
+  <span class="tag">Rule of thumb</span>
+  <p>Linear recursion (one recursive call) converts to a simple loop. Tree recursion (two+ calls) converts to a loop with an explicit stack or queue.</p>
+</div>
+</section>
+
+<!-- ════════════════════ SECTION 10 ════════════════════ -->
+<section id="pitfalls">
+<h2 class="section-title"><span class="num">10</span> Common pitfalls</h2>
+<table>
+  <thead>
+    <tr><th>Pitfall</th><th>Symptom</th><th>Fix</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Missing base case</td>
+      <td><code>RecursionError</code></td>
+      <td>Always define when to stop first</td>
+    </tr>
+    <tr>
+      <td>Wrong base case</td>
+      <td>Wrong answer for small inputs</td>
+      <td>Test with n=0, n=1, n=2</td>
+    </tr>
+    <tr>
+      <td>Not shrinking problem</td>
+      <td>Infinite recursion</td>
+      <td>Each call must move toward the base case</td>
+    </tr>
+    <tr>
+      <td>Mutating shared state</td>
+      <td>Weird/wrong results</td>
+      <td>Use <code>path[:]</code> copies or undo mutations</td>
+    </tr>
+    <tr>
+      <td>Overlapping subproblems</td>
+      <td>Time limit exceeded</td>
+      <td>Add <code>@lru_cache</code> or a memo dict</td>
+    </tr>
+  </tbody>
+</table>
+<div class="callout danger">
+  <span class="tag">Python-specific</span>
+  <p>Python does <strong>not</strong> optimize tail recursion. The default stack limit is ~1000 frames. For deep recursion, either increase the limit with <code>sys.setrecursionlimit()</code> or convert to iteration.</p>
+</div>
+</section>
+
+<!-- ════════════════════ SECTION 11 ════════════════════ -->
+<section id="roadmap">
+<h2 class="section-title"><span class="num">11</span> Practice roadmap</h2>
+<p>Work through these levels in order. At each problem, start with brute-force recursion, then optimize.</p>
+<div class="roadmap">
+  <div class="level">
+    <span class="tag">Level 1 — Basics</span>
+    <div class="problems">factorial · fibonacci · sum of list · power(x, n) · reverse string</div>
+  </div>
+  <div class="level">
+    <span class="tag">Level 2 — Trees & linked lists</span>
+    <div class="problems">max depth · inorder traversal · invert tree · reverse linked list · merge two sorted lists</div>
+  </div>
+  <div class="level">
+    <span class="tag">Level 3 — Divide & conquer</span>
+    <div class="problems">merge sort · quick sort · binary search · kth largest element · construct tree from traversals</div>
+  </div>
+  <div class="level">
+    <span class="tag">Level 4 — Backtracking</span>
+    <div class="problems">permutations · subsets · combination sum · N-queens · sudoku solver · word search</div>
+  </div>
+  <div class="level">
+    <span class="tag">Level 5 — Recursion → DP</span>
+    <div class="problems">climbing stairs · coin change · longest common subsequence · 0/1 knapsack · edit distance</div>
+  </div>
+</div>
+</section>
+
+<!-- ════════════════════ SECTION 12 ════════════════════ -->
+<section id="files">
+<h2 class="section-title"><span class="num">12</span> Code files reference</h2>
+<p>Each example is available as a standalone, runnable Python file:</p>
+<div class="file-list">
+  <div class="file-item"><span class="icon">&#9654;</span> 01_factorial.py</div>
+  <div class="file-item"><span class="icon">&#9654;</span> 02_sum_of_list.py</div>
+  <div class="file-item"><span class="icon">&#9654;</span> 03_fibonacci.py</div>
+  <div class="file-item"><span class="icon">&#9654;</span> 04_linked_list.py</div>
+  <div class="file-item"><span class="icon">&#9654;</span> 05_binary_tree.py</div>
+  <div class="file-item"><span class="icon">&#9654;</span> 06_merge_sort.py</div>
+  <div class="file-item"><span class="icon">&#9654;</span> 07_binary_search.py</div>
+  <div class="file-item"><span class="icon">&#9654;</span> 08_backtracking.py</div>
+  <div class="file-item"><span class="icon">&#9654;</span> 09_n_queens.py</div>
+  <div class="file-item"><span class="icon">&#9654;</span> 10_climbing_stairs_dp.py</div>
+  <div class="file-item"><span class="icon">&#9654;</span> 11_iterative_conversion.py</div>
+</div>
+<p style="margin-top:1rem">Run any file with: <code>python examples/01_factorial.py</code></p>
+</section>
+
+<footer style="text-align:center;padding:3rem 0 1rem;color:var(--dim);font-size:.85rem">
+  <p>Recursion Guide — Python DSA</p>
+</footer>
+
+</body>
+</html>
