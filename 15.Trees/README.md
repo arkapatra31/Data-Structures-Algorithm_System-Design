@@ -1129,4 +1129,4 @@ COMPLEXITY QUICK LOOK:
 
 ---
 
-*Previous: [Recursion](../14.Recursion/README.md) | Next: coming soon*
+*Previous: [Recursion](../14.Recursion/README.md) | Next: [Hashing](../16.Hashing/README.md)*
