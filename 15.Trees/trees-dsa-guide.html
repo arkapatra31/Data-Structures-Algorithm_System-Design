@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trees in DSA — Zero to Hero</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#faf9f6;--fg:#1a1a18;--dim:#73726c;--dim2:#9c9a92;--surface:#f0efe9;
+  --border:rgba(0,0,0,0.09);--accent:#534AB7;--accent-bg:#EEEDFE;--accent2:#0F6E56;
+  --code-bg:#f5f4ef;--code-border:#e5e3db;
+  --purple-50:#EEEDFE;--purple-600:#534AB7;--purple-800:#3C3489;
+  --teal-50:#E1F5EE;--teal-600:#0F6E56;--teal-800:#085041;
+  --coral-50:#FAECE7;--coral-600:#993C1D;--coral-800:#712B13;
+  --amber-50:#FAEEDA;--amber-600:#854F0B;--amber-800:#633806;
+  --green-50:#EAF3DE;--green-600:#3B6D11;--green-800:#27500A;
+  --gray-50:#F1EFE8;--gray-600:#5F5E5A;--gray-800:#444441;
+  --red-50:#FCEBEB;--red-600:#A32D2D;--blue-50:#E6F1FB;--blue-600:#185FA5;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1a1a18;--fg:#e8e6df;--dim:#9c9a92;--dim2:#73726c;--surface:#252523;
+  --border:rgba(255,255,255,0.08);--accent:#AFA9EC;--accent-bg:#26215C;--accent2:#5DCAA5;
+  --code-bg:#22221f;--code-border:#333330;
+  --purple-50:#26215C;--purple-600:#AFA9EC;--purple-800:#CECBF6;
+  --teal-50:#04342C;--teal-600:#5DCAA5;--teal-800:#9FE1CB;
+  --coral-50:#4A1B0C;--coral-600:#F0997B;--coral-800:#F5C4B3;
+  --amber-50:#412402;--amber-600:#EF9F27;--amber-800:#FAC775;
+  --green-50:#173404;--green-600:#97C459;--green-800:#C0DD97;
+  --gray-50:#2C2C2A;--gray-600:#B4B2A9;--gray-800:#D3D1C7;
+  --red-50:#501313;--red-600:#F09595;--blue-50:#042C53;--blue-600:#85B7EB;
+}}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--fg);line-height:1.7}
+code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);padding:1px 6px;border-radius:4px}
+h2{font-size:22px;font-weight:700;margin:0 0 10px}
+h3{font-size:17px;font-weight:600;margin:24px 0 10px;color:var(--fg)}
+p{color:var(--dim);margin-bottom:14px}
+strong{color:var(--fg);font-weight:600}
+a{color:var(--accent);text-decoration:none}
+
+/* Layout */
+.shell{max-width:760px;margin:0 auto;padding:0 20px}
+header{padding:32px 0 24px;border-bottom:1px solid var(--border)}
+header .tag{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:6px}
+header h1{font-size:28px;font-weight:700;line-height:1.2}
+header .sub{font-size:14px;color:var(--dim);margin-top:6px}
+
+/* Nav */
+nav{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 0;overflow-x:auto;display:flex;gap:4px;-webkit-overflow-scrolling:touch}
+nav button{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;border:none;cursor:pointer;white-space:nowrap;background:transparent;color:var(--dim);font-family:inherit;transition:all .15s}
+nav button.active{background:var(--accent);color:#fff}
+nav button:hover:not(.active){background:var(--border)}
+
+/* Sections */
+.section{display:none;padding:28px 0 40px}
+.section.active{display:block}
+
+/* Chips */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+.chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1.5px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;font-family:inherit;transition:all .15s}
+.chip.on{border-color:var(--accent);background:var(--accent-bg);color:var(--accent)}
+
+/* Cards / Grid */
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.card{padding:10px 14px;border-radius:8px;background:var(--surface);font-size:13px}
+.card b{color:var(--accent);font-weight:600}
+.card span{color:var(--dim)}
+.info-box{background:var(--surface);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:13px}
+.info-box .label{font-weight:600;margin-bottom:4px}
+.info-box .dim{color:var(--dim);font-size:12px}
+
+/* File ref */
+.file-ref{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px solid var(--code-border);background:var(--code-bg);font-size:13px;font-family:'JetBrains Mono',monospace;color:var(--accent);margin:10px 0}
+.file-ref .icon{font-size:15px;opacity:.7}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+th{padding:8px 12px;text-align:left;color:var(--dim);font-weight:600;border-bottom:1px solid var(--border)}
+td{padding:8px 12px;border-bottom:1px solid var(--border)}
+.g{color:var(--green-600)}.r{color:var(--coral-600)}.a{color:var(--amber-600)}
+
+/* SVG canvas container */
+.tree-vis{display:flex;justify-content:center;margin:16px 0}
+.tree-vis svg{max-width:100%}
+
+/* Badges */
+.badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;display:inline-block}
+.b-green{background:var(--green-50);color:var(--green-600)}
+.b-blue{background:var(--blue-50);color:var(--blue-600)}
+.b-amber{background:var(--amber-50);color:var(--amber-600)}
+.b-red{background:var(--red-50);color:var(--red-600)}
+.b-purple{background:var(--purple-50);color:var(--purple-600)}
+
+/* Phase cards (roadmap) */
+.phase{padding:14px 18px;border-radius:10px;border:1px solid var(--border);margin-bottom:10px}
+.phase-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.phase-title{font-size:15px;font-weight:600}
+.phase-topics{font-size:13px;color:var(--dim);line-height:1.7}
+.phase-probs{font-size:12px;color:var(--accent);margin-top:6px}
+
+/* Footer nav */
+.foot-nav{display:flex;justify-content:space-between;margin-top:36px;padding-top:20px;border-top:1px solid var(--border)}
+.foot-nav button{padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s}
+.fn-prev{background:none;border:1px solid var(--border);color:var(--dim)}
+.fn-next{background:var(--accent);border:none;color:#fff;font-weight:500}
+
+/* Before/After diagrams */
+.ba-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:12px 0}
+.ba-label{font-size:11px;text-align:center;color:var(--dim);font-weight:600;margin-bottom:4px}
+.ba-arrow{font-size:24px;color:var(--accent);text-align:center}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:rgba(128,128,128,.3);border-radius:4px}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<header>
+  <div class="tag">Complete guide</div>
+  <h1>Trees in DSA</h1>
+  <div class="sub">From zero to hero — interactive visual reference with code files</div>
+</header>
+
+<nav id="nav"></nav>
+
+<!-- ==================== SECTION 1: BASICS ==================== -->
+<div class="section" id="sec-basics">
+  <h2>What is a tree?</h2>
+  <p>A tree is a <strong>hierarchical</strong> data structure of nodes connected by edges. Unlike arrays or linked lists, it branches out. The key rule: every node has exactly <strong>one parent</strong>, except the root (which has none), and there are <strong>no cycles</strong>.</p>
+
+  <div class="tree-vis" id="vis-basics"></div>
+
+  <h3>Key terminology</h3>
+  <div class="card-grid" id="term-grid"></div>
+
+  <h3>Node representation</h3>
+  <p>The simplest tree is a <strong>binary tree</strong> — each node has at most 2 children. A node holds a value and two pointers (<code>left</code>, <code>right</code>). Everything else builds on top of this.</p>
+  <div class="file-ref"><span class="icon">📄</span> 01_tree_basics.py</div>
+</div>
+
+<!-- ==================== SECTION 2: TRAVERSALS ==================== -->
+<div class="section" id="sec-traversals">
+  <h2>Tree traversals</h2>
+  <p>Traversal = visiting every node in a specific order. The DFS ones only differ in <strong>when</strong> you process the current node relative to its children. The name tells you where "Root" goes.</p>
+
+  <div class="chips" id="trav-chips"></div>
+  <div class="tree-vis" id="vis-traversal"></div>
+  <div class="info-box">
+    <div class="label" id="trav-order"></div>
+    <div class="dim" id="trav-desc"></div>
+  </div>
+
+  <h3>Key insight</h3>
+  <p><strong>Inorder</strong> on a BST gives sorted output. <strong>Preorder</strong> is used for serialization. <strong>Postorder</strong> for deletion. <strong>Level order</strong> is BFS with a queue. Know both recursive and iterative versions for interviews.</p>
+  <div class="file-ref"><span class="icon">📄</span> 02_traversals.py</div>
+</div>
+
+<!-- ==================== SECTION 3: BST ==================== -->
+<div class="section" id="sec-bst">
+  <h2>Binary search tree (BST)</h2>
+  <p>A BST enforces one rule: for every node, <strong>left subtree values &lt; node &lt; right subtree values</strong>. This lets you search in O(log n) by eliminating half the tree at each step.</p>
+
+  <div class="chips" id="bst-chips"></div>
+  <div class="tree-vis" id="vis-bst"></div>
+  <div class="info-box" id="bst-path-info"></div>
+
+  <h3>Operations</h3>
+  <p><strong>Insert</strong> — walk left/right until you find an empty spot. <strong>Search</strong> — same walk, return when found or null. <strong>Delete</strong> — the tricky one: 0 children (just remove), 1 child (replace with child), 2 children (replace with inorder successor).</p>
+
+  <h3>Complexity</h3>
+  <table>
+    <thead><tr><th>Operation</th><th>Average</th><th>Worst (skewed)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Search</strong></td><td class="g">O(log n)</td><td class="r">O(n)</td></tr>
+      <tr><td><strong>Insert</strong></td><td class="g">O(log n)</td><td class="r">O(n)</td></tr>
+      <tr><td><strong>Delete</strong></td><td class="g">O(log n)</td><td class="r">O(n)</td></tr>
+    </tbody>
+  </table>
+  <div class="file-ref"><span class="icon">📄</span> 03_bst_operations.py</div>
+</div>
+
+<!-- ==================== SECTION 4: PATTERNS ==================== -->
+<div class="section" id="sec-patterns">
+  <h2>Common tree patterns</h2>
+  <p>These patterns cover ~80% of tree interview questions. Master them and most problems become variations.</p>
+
+  <div id="pattern-list"></div>
+
+  <div class="file-ref"><span class="icon">📄</span> 04_tree_patterns.py</div>
+</div>
+
+<!-- ==================== SECTION 5: AVL ==================== -->
+<div class="section" id="sec-avl">
+  <h2>AVL trees (self-balancing BST)</h2>
+  <p>A BST degenerates to O(n) when you insert sorted values (it becomes a linked list). AVL trees guarantee O(log n) by ensuring the <strong>height difference</strong> between left and right subtrees is at most 1. When violated, a <strong>rotation</strong> rebalances.</p>
+
+  <h3>The 4 rotation cases</h3>
+  <div class="chips" id="avl-chips"></div>
+  <p id="avl-desc" style="font-size:13px"></p>
+  <div class="ba-grid">
+    <div><div class="ba-label">Before</div><div class="tree-vis" id="vis-avl-before"></div></div>
+    <div class="ba-arrow">→</div>
+    <div><div class="ba-label">After</div><div class="tree-vis" id="vis-avl-after"></div></div>
+  </div>
+
+  <h3>How it works</h3>
+  <p>After every insert or delete, walk back up to root updating heights. At each node, check balance factor = height(left) − height(right). If |balance| > 1, apply the appropriate rotation. The rotation case depends on where the imbalance originated (left-left, right-right, left-right, or right-left).</p>
+  <div class="file-ref"><span class="icon">📄</span> 05_avl_tree.py</div>
+</div>
+
+<!-- ==================== SECTION 6: TRIE ==================== -->
+<div class="section" id="sec-trie">
+  <h2>Trie (prefix tree)</h2>
+  <p>A trie stores strings character by character along branches. Shared prefixes share the same path — <code>cat</code> and <code>car</code> share <code>c→a</code>. Search and insert are both <strong>O(L)</strong> where L is word length.</p>
+
+  <div class="chips" id="trie-chips"></div>
+  <div class="tree-vis" id="vis-trie"></div>
+
+  <h3>When to use tries</h3>
+  <div class="card-grid">
+    <div class="card"><b>Autocomplete</b><br><span>Prefix search in O(L)</span></div>
+    <div class="card"><b>Spell checker</b><br><span>Find similar words quickly</span></div>
+    <div class="card"><b>Word Search II</b><br><span>Classic interview problem</span></div>
+    <div class="card"><b>IP routing</b><br><span>Longest prefix match</span></div>
+  </div>
+  <div class="file-ref"><span class="icon">📄</span> 06_trie.py</div>
+</div>
+
+<!-- ==================== SECTION 7: HEAP ==================== -->
+<div class="section" id="sec-heap">
+  <h2>Heap / Priority queue</h2>
+  <p>A heap is a <strong>complete binary tree</strong> where every parent is greater (max-heap) or smaller (min-heap) than its children. The beauty: it's stored as a <strong>flat array</strong> — no pointers needed.</p>
+
+  <div class="tree-vis" id="vis-heap"></div>
+
+  <div class="info-box">
+    <div class="label">Array representation: [50, 30, 40, 10, 20, 35, 15]</div>
+    <div class="dim">For index <code>i</code>: parent = <code>(i-1)//2</code>, left child = <code>2*i+1</code>, right child = <code>2*i+2</code></div>
+  </div>
+
+  <h3>Key operations</h3>
+  <table>
+    <thead><tr><th>Operation</th><th>Time</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Push</strong></td><td class="g">O(log n)</td><td>Add element, sift up</td></tr>
+      <tr><td><strong>Pop</strong></td><td class="g">O(log n)</td><td>Remove top, sift down</td></tr>
+      <tr><td><strong>Peek</strong></td><td class="g">O(1)</td><td>View top without removing</td></tr>
+      <tr><td><strong>Build</strong></td><td class="g">O(n)</td><td>Heapify array bottom-up</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Use cases</h3>
+  <div class="card-grid">
+    <div class="card"><b>Top-K elements</b><br><span>k largest / smallest in O(n log k)</span></div>
+    <div class="card"><b>Merge K sorted lists</b><br><span>Classic interview problem</span></div>
+    <div class="card"><b>Dijkstra's algorithm</b><br><span>Shortest path with priority queue</span></div>
+    <div class="card"><b>Median finder</b><br><span>Two heaps (max + min)</span></div>
+  </div>
+  <div class="file-ref"><span class="icon">📄</span> 07_heap.py</div>
+</div>
+
+<!-- ==================== SECTION 8: SEGMENT TREE ==================== -->
+<div class="section" id="sec-segment">
+  <h2>Segment tree</h2>
+  <p>A segment tree answers <strong>range queries</strong> (sum, min, max over a subarray) in O(log n) while supporting point updates in O(log n). Each node stores the answer for a range, and its children split that range in half.</p>
+
+  <div class="tree-vis" id="vis-segment"></div>
+  <div class="info-box">
+    <div class="label">Array: [3, 5, 7, 4, 8, 9]</div>
+    <div class="dim">Each leaf = array element. Each parent = sum of its children. Query sum(1..4) = 5+7+4+8 = 24 in O(log n).</div>
+  </div>
+
+  <h3>Three variants</h3>
+  <div class="card-grid">
+    <div class="card"><b>Basic</b><br><span>Point update + range query</span></div>
+    <div class="card"><b>Lazy propagation</b><br><span>Range update + range query</span></div>
+    <div class="card"><b>Fenwick / BIT</b><br><span>Simpler, less space, prefix sums</span></div>
+    <div class="card"><b>Persistent</b><br><span>Keep history of all versions</span></div>
+  </div>
+  <div class="file-ref"><span class="icon">📄</span> 08_segment_tree.py</div>
+</div>
+
+<!-- ==================== SECTION 9: ROADMAP ==================== -->
+<div class="section" id="sec-roadmap">
+  <h2>Learning roadmap</h2>
+  <div id="roadmap-list"></div>
+
+  <h3>Complete complexity cheat sheet</h3>
+  <table>
+    <thead><tr><th>Structure</th><th>Search</th><th>Insert</th><th>Delete</th><th>Space</th></tr></thead>
+    <tbody>
+      <tr><td><strong>BST (avg)</strong></td><td class="g">O(log n)</td><td class="g">O(log n)</td><td class="g">O(log n)</td><td>O(n)</td></tr>
+      <tr><td><strong>BST (worst)</strong></td><td class="r">O(n)</td><td class="r">O(n)</td><td class="r">O(n)</td><td>O(n)</td></tr>
+      <tr><td><strong>AVL / Red-Black</strong></td><td class="g">O(log n)</td><td class="g">O(log n)</td><td class="g">O(log n)</td><td>O(n)</td></tr>
+      <tr><td><strong>Heap</strong></td><td class="a">O(n)</td><td class="g">O(log n)</td><td class="g">O(log n)</td><td>O(n)</td></tr>
+      <tr><td><strong>Trie</strong></td><td class="g">O(L)</td><td class="g">O(L)</td><td class="g">O(L)</td><td class="a">O(N×L)</td></tr>
+      <tr><td><strong>Segment tree</strong></td><td class="g">O(log n)</td><td class="g">O(log n)</td><td>—</td><td>O(4n)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>All code files</h3>
+  <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+    <div class="file-ref"><span class="icon">📄</span> 01_tree_basics.py</div>
+    <div class="file-ref"><span class="icon">📄</span> 02_traversals.py</div>
+    <div class="file-ref"><span class="icon">📄</span> 03_bst_operations.py</div>
+    <div class="file-ref"><span class="icon">📄</span> 04_tree_patterns.py</div>
+    <div class="file-ref"><span class="icon">📄</span> 05_avl_tree.py</div>
+    <div class="file-ref"><span class="icon">📄</span> 06_trie.py</div>
+    <div class="file-ref"><span class="icon">📄</span> 07_heap.py</div>
+    <div class="file-ref"><span class="icon">📄</span> 08_segment_tree.py</div>
+  </div>
+</div>
+
+</div><!-- .shell -->
+
+<script>
+// ============================================================
+//  DATA
+// ============================================================
+const SECTIONS = [
+  {id:'basics',label:'1. Basics'},
+  {id:'traversals',label:'2. Traversals'},
+  {id:'bst',label:'3. BST'},
+  {id:'patterns',label:'4. Patterns'},
+  {id:'avl',label:'5. AVL'},
+  {id:'trie',label:'6. Trie'},
+  {id:'heap',label:'7. Heap'},
+  {id:'segment',label:'8. Segment Tree'},
+  {id:'roadmap',label:'9. Roadmap'},
+];
+
+const TERMS = [
+  ['Root','Top node, no parent'],['Parent','Node with children'],
+  ['Child','Node below a parent'],['Leaf','No children'],
+  ['Siblings','Share a parent'],['Depth','Distance from root'],
+  ['Height','Longest path to leaf'],['Subtree','Node + descendants'],
+];
+
+const TRAVERSALS = {
+  inorder:{order:[3,5,7,10,15,20],label:'3 → 5 → 7 → 10 → 15 → 20',desc:'Left → Root → Right — gives sorted order in BST'},
+  preorder:{order:[10,5,3,7,15,20],label:'10 → 5 → 3 → 7 → 15 → 20',desc:'Root → Left → Right — used to copy / serialize a tree'},
+  postorder:{order:[3,7,5,20,15,10],label:'3 → 7 → 5 → 20 → 15 → 10',desc:'Left → Right → Root — used to delete tree bottom-up'},
+  levelorder:{order:[10,5,15,3,7,20],label:'10 → 5 → 15 → 3 → 7 → 20',desc:'Level by level, left to right — BFS using a queue'},
+};
+
+const BST_TREE = {10:{l:5,r:15},5:{l:3,r:7},15:{l:12,r:20},3:{},7:{},12:{},20:{}};
+
+const PATTERNS = [
+  {name:'Height / Depth',desc:'Base case: null → 0. Recurse: 1 + max(left, right). Foundation for everything.'},
+  {name:'Balanced check',desc:'|height(left) − height(right)| ≤ 1 at every node. Optimize by checking during height computation.'},
+  {name:'LCA (Lowest Common Ancestor)',desc:'In BST: walk to the split point. In general tree: recursive post-order search.'},
+  {name:'Validate BST',desc:'Pass (low, high) bounds down. Each node must satisfy low < val < high.'},
+  {name:'Path sum',desc:'Subtract node value from target as you descend. At leaf, check if remaining = 0.'},
+  {name:'Diameter',desc:'Longest path between any two nodes. At each node: left_height + right_height. Track global max.'},
+  {name:'Serialize / Deserialize',desc:'Preorder with null markers. Serialize to string, deserialize by reading tokens with an iterator.'},
+  {name:'Invert / Mirror',desc:'Swap left and right at every node. One-liner recursion. Symmetric check uses mirror comparison.'},
+  {name:'Right side view',desc:'Level-order (BFS). At each level, the last node is visible from the right side.'},
+];
+
+const AVL_CASES = {
+  LL:{desc:'Left-Left: inserted in left subtree of left child. Fix with single right rotation.',
+    before:[{v:'30',x:150,y:30,c:'coral'},{v:'20',x:90,y:90,c:'amber'},{v:'T4',x:210,y:90,c:'gray'},{v:'10',x:50,y:150,c:'green'},{v:'T3',x:130,y:150,c:'gray'}],
+    bEdges:[[150,48,90,72],[150,48,210,72],[90,108,50,132],[90,108,130,132]],
+    after:[{v:'20',x:150,y:30,c:'amber'},{v:'10',x:90,y:90,c:'green'},{v:'30',x:210,y:90,c:'coral'},{v:'T3',x:170,y:150,c:'gray'},{v:'T4',x:250,y:150,c:'gray'}],
+    aEdges:[[150,48,90,72],[150,48,210,72],[210,108,170,132],[210,108,250,132]]},
+  RR:{desc:'Right-Right: inserted in right subtree of right child. Fix with single left rotation.',
+    before:[{v:'10',x:90,y:30,c:'coral'},{v:'T1',x:30,y:90,c:'gray'},{v:'20',x:160,y:90,c:'amber'},{v:'T2',x:120,y:150,c:'gray'},{v:'30',x:210,y:150,c:'green'}],
+    bEdges:[[90,48,30,72],[90,48,160,72],[160,108,120,132],[160,108,210,132]],
+    after:[{v:'20',x:150,y:30,c:'amber'},{v:'10',x:90,y:90,c:'coral'},{v:'30',x:210,y:90,c:'green'},{v:'T1',x:50,y:150,c:'gray'},{v:'T2',x:130,y:150,c:'gray'}],
+    aEdges:[[150,48,90,72],[150,48,210,72],[90,108,50,132],[90,108,130,132]]},
+  LR:{desc:'Left-Right: inserted in right subtree of left child. Fix: left rotate child, then right rotate root.',
+    before:[{v:'30',x:150,y:30,c:'coral'},{v:'10',x:80,y:90,c:'green'},{v:'T4',x:220,y:90,c:'gray'},{v:'T1',x:40,y:150,c:'gray'},{v:'20',x:130,y:150,c:'amber'}],
+    bEdges:[[150,48,80,72],[150,48,220,72],[80,108,40,132],[80,108,130,132]],
+    after:[{v:'20',x:150,y:30,c:'amber'},{v:'10',x:90,y:90,c:'green'},{v:'30',x:210,y:90,c:'coral'},{v:'T1',x:50,y:150,c:'gray'},{v:'T4',x:250,y:150,c:'gray'}],
+    aEdges:[[150,48,90,72],[150,48,210,72],[90,108,50,132],[210,108,250,132]]},
+  RL:{desc:'Right-Left: inserted in left subtree of right child. Fix: right rotate child, then left rotate root.',
+    before:[{v:'10',x:90,y:30,c:'coral'},{v:'T1',x:30,y:90,c:'gray'},{v:'30',x:170,y:90,c:'green'},{v:'20',x:130,y:150,c:'amber'},{v:'T4',x:220,y:150,c:'gray'}],
+    bEdges:[[90,48,30,72],[90,48,170,72],[170,108,130,132],[170,108,220,132]],
+    after:[{v:'20',x:150,y:30,c:'amber'},{v:'10',x:90,y:90,c:'coral'},{v:'30',x:210,y:90,c:'green'},{v:'T1',x:50,y:150,c:'gray'},{v:'T4',x:250,y:150,c:'gray'}],
+    aEdges:[[150,48,90,72],[150,48,210,72],[90,108,50,132],[210,108,250,132]]},
+};
+
+const TRIE_PATHS = {
+  cat:['root','c','a','t'], car:['root','c','a','r'], dog:['root','d','o','g']
+};
+
+const ROADMAP = [
+  {badge:'b-green',level:'Beginner',title:'Foundations',topics:'Tree node, terminology, binary tree vs general, recursive thinking, DFS vs BFS, 4 traversals, height & depth.',probs:'Max depth #104, Invert tree #226, Same tree #100, Symmetric #101'},
+  {badge:'b-blue',level:'Intermediate',title:'BST mastery',topics:'BST property, insert/search/delete, validate BST, inorder = sorted, LCA, sorted array → BST, kth smallest.',probs:'Validate BST #98, LCA #235, Kth smallest #230, Range sum #938'},
+  {badge:'b-blue',level:'Intermediate',title:'Tree patterns',topics:'Path sum, diameter, subtree checks, serialize/deserialize, construct from traversals, views, zigzag & boundary traversal.',probs:'Diameter #543, Right side view #199, Serialize #297, Flatten #114'},
+  {badge:'b-amber',level:'Advanced',title:'Balanced trees',topics:'Why BSTs degenerate, AVL rotations (LL, RR, LR, RL), Red-Black trees (concept), when to use each.',probs:'Implement AVL insert, understand rotation cases'},
+  {badge:'b-amber',level:'Advanced',title:'Specialized trees',topics:'Tries for strings, heaps for priority, segment trees for ranges, Fenwick/BIT for prefix sums.',probs:'Implement trie #208, Word Search II #212, Range sum #307, Top K #347'},
+  {badge:'b-red',level:'Expert',title:'Competition level',topics:'Heavy-light decomposition, centroid decomposition, Euler tour, B-trees, suffix trees, LCA with binary lifting.',probs:'Competitive programming tree problems, DB index design'},
+];
+
+// ============================================================
+//  SVG HELPERS
+// ============================================================
+const C = {
+  purple:{bg:'var(--purple-50)',s:'var(--purple-600)',t:'var(--purple-800)'},
+  teal:{bg:'var(--teal-50)',s:'var(--teal-600)',t:'var(--teal-800)'},
+  coral:{bg:'var(--coral-50)',s:'var(--coral-600)',t:'var(--coral-800)'},
+  amber:{bg:'var(--amber-50)',s:'var(--amber-600)',t:'var(--amber-800)'},
+  green:{bg:'var(--green-50)',s:'var(--green-600)',t:'var(--green-800)'},
+  gray:{bg:'var(--gray-50)',s:'var(--gray-600)',t:'var(--gray-800)'},
+};
+
+function svgNode(x,y,label,color,r=22,hl=false){
+  const c=C[color]||C.gray;
+  const hlCol='var(--amber-600)';
+  return `<circle cx="${x}" cy="${y}" r="${r}" fill="${hl?'var(--amber-50)':c.bg}" stroke="${hl?hlCol:c.s}" stroke-width="${hl?2:.8}"/>
+    <text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="${hl?hlCol:c.t}">${label}</text>`;
+}
+
+function svgEdge(x1,y1,x2,y2,hl=false){
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${hl?'var(--amber-600)':'var(--dim2)'}" stroke-width="${hl?2.5:.8}" opacity="${hl?.7:.4}"/>`;
+}
+
+function svgWrap(w,h,inner){
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px">${inner}</svg>`;
+}
+
+// ============================================================
+//  NAV
+// ============================================================
+let currentSection = 'basics';
+
+function goTo(id){
+  currentSection = id;
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('#nav button').forEach(b=>{
+    b.classList.toggle('active',b.dataset.id===id);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function buildNav(){
+  const nav = document.getElementById('nav');
+  SECTIONS.forEach(s=>{
+    const b = document.createElement('button');
+    b.textContent = s.label;
+    b.dataset.id = s.id;
+    b.onclick = ()=>goTo(s.id);
+    nav.appendChild(b);
+  });
+}
+
+// ============================================================
+//  SECTION BUILDERS
+// ============================================================
+
+function buildBasics(){
+  // Tree visual
+  const svg = svgEdge(200,54,130,92)+svgEdge(200,54,270,92)+svgEdge(130,128,90,168)+svgEdge(130,128,170,168)+svgEdge(270,128,310,168)
+    +svgNode(200,36,'A','purple')+svgNode(130,110,'B','teal')+svgNode(270,110,'C','teal')
+    +svgNode(90,186,'D','coral')+svgNode(170,186,'E','coral')+svgNode(310,186,'F','coral')
+    +`<text x="232" y="36" font-size="11" fill="var(--dim)">root</text>`;
+  document.getElementById('vis-basics').innerHTML = svgWrap(400,210,svg);
+
+  // Terminology
+  const grid = document.getElementById('term-grid');
+  TERMS.forEach(([term,desc])=>{
+    grid.innerHTML += `<div class="card"><b>${term}</b> <span>— ${desc}</span></div>`;
+  });
+}
+
+function buildTraversals(){
+  let mode = 'inorder';
+  const chips = document.getElementById('trav-chips');
+  Object.keys(TRAVERSALS).forEach(k=>{
+    const b = document.createElement('button');
+    b.className = 'chip'+(k===mode?' on':'');
+    b.textContent = k;
+    b.onclick = ()=>{mode=k;renderTrav();chips.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.textContent===k))};
+    chips.appendChild(b);
+  });
+
+  const nodes = [{id:10,x:200,y:36,c:'purple'},{id:5,x:120,y:110,c:'teal'},{id:15,x:280,y:110,c:'teal'},
+    {id:3,x:70,y:186,c:'coral'},{id:7,x:170,y:186,c:'coral'},{id:20,x:330,y:186,c:'coral'}];
+  const edges = [[188,54,132,92],[212,54,268,92],[110,128,82,168],[130,128,158,168],[290,128,318,168]];
+
+  function renderTrav(){
+    const t = TRAVERSALS[mode];
+    const valToStep = {};
+    t.order.forEach((v,i)=>valToStep[v]=i+1);
+    let svg = edges.map(e=>svgEdge(...e)).join('');
+    nodes.forEach(n=>{
+      svg += svgNode(n.x,n.y,n.id,n.c,24);
+      const step = valToStep[n.id];
+      svg += `<circle cx="${n.x+18}" cy="${n.y-18}" r="10" fill="var(--amber-600)" opacity=".9"/>`;
+      svg += `<text x="${n.x+18}" y="${n.y-18}" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="700" fill="#fff">${step}</text>`;
+    });
+    document.getElementById('vis-traversal').innerHTML = svgWrap(400,220,svg);
+    document.getElementById('trav-order').textContent = t.label;
+    document.getElementById('trav-desc').textContent = t.desc;
+  }
+  renderTrav();
+}
+
+function buildBST(){
+  let searchVal = 7;
+  const vals = [3,5,7,10,12,15,20];
+  const chips = document.getElementById('bst-chips');
+  const nodes = [{id:10,x:210,y:36,c:'purple'},{id:5,x:120,y:110,c:'teal'},{id:15,x:300,y:110,c:'teal'},
+    {id:3,x:70,y:186,c:'coral'},{id:7,x:170,y:186,c:'coral'},{id:12,x:250,y:186,c:'coral'},{id:20,x:350,y:186,c:'coral'}];
+  const edges = [[198,54,132,92],[222,54,288,92],[108,128,82,168],[132,128,158,168],[288,128,262,168],[312,128,338,168]];
+
+  vals.forEach(v=>{
+    const b = document.createElement('button');
+    b.className = 'chip'+(v===searchVal?' on':'');
+    b.textContent = v;
+    b.onclick = ()=>{searchVal=v;renderBST();chips.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',+c.textContent===v))};
+    chips.appendChild(b);
+  });
+
+  function getPath(val){
+    const path=[10],ep=[];let cur=10;
+    while(cur!==undefined&&cur!==val){
+      const n=BST_TREE[cur];
+      if(val<cur){ep.push(cur+'-'+n.l);cur=n.l}
+      else{ep.push(cur+'-'+n.r);cur=n.r}
+      if(cur!==undefined)path.push(cur);
+    }
+    return{nodes:path,edges:ep};
+  }
+
+  function renderBST(){
+    const p = getPath(searchVal);
+    const edgeMap={};
+    edges.forEach((e,i)=>{
+      const keys=['10-5','10-15','5-3','5-7','15-12','15-20'];
+      edgeMap[keys[i]]=e;
+    });
+    let svg = edges.map((e,i)=>{
+      const keys=['10-5','10-15','5-3','5-7','15-12','15-20'];
+      return svgEdge(...e,p.edges.includes(keys[i]));
+    }).join('');
+    nodes.forEach(n=>{
+      const isFound = n.id===searchVal;
+      const isPath = p.nodes.includes(n.id);
+      svg += svgNode(n.x,n.y,n.id,isFound?'green':n.c,22,isPath&&!isFound);
+    });
+    document.getElementById('vis-bst').innerHTML = svgWrap(420,220,svg);
+    document.getElementById('bst-path-info').innerHTML =
+      `<div class="label">Path: ${p.nodes.join(' → ')}</div><div class="dim">${p.nodes.length} comparison${p.nodes.length>1?'s':''} — eliminated ${7-p.nodes.length} nodes without visiting them</div>`;
+  }
+  renderBST();
+}
+
+function buildPatterns(){
+  const el = document.getElementById('pattern-list');
+  PATTERNS.forEach((p,i)=>{
+    el.innerHTML += `<div style="padding:10px 0;${i<PATTERNS.length-1?'border-bottom:1px solid var(--border)':''}">
+      <div style="font-size:14px;font-weight:600;margin-bottom:2px">${i+1}. ${p.name}</div>
+      <div style="font-size:13px;color:var(--dim)">${p.desc}</div></div>`;
+  });
+}
+
+function buildAVL(){
+  let mode = 'LL';
+  const chips = document.getElementById('avl-chips');
+  Object.keys(AVL_CASES).forEach(k=>{
+    const b = document.createElement('button');
+    b.className = 'chip'+(k===mode?' on':'');
+    b.textContent = k+' rotation';
+    b.dataset.k = k;
+    b.onclick = ()=>{mode=k;renderAVL();chips.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.k===k))};
+    chips.appendChild(b);
+  });
+
+  function renderTree(nodes,edges){
+    let svg = edges.map(e=>svgEdge(e[0],e[1],e[2],e[3])).join('');
+    nodes.forEach(n=>{ svg += svgNode(n.x,n.y,n.v,n.c,20); });
+    return svgWrap(300,180,svg);
+  }
+
+  function renderAVL(){
+    const d = AVL_CASES[mode];
+    document.getElementById('avl-desc').textContent = d.desc;
+    document.getElementById('vis-avl-before').innerHTML = renderTree(d.before,d.bEdges);
+    document.getElementById('vis-avl-after').innerHTML = renderTree(d.after,d.aEdges);
+  }
+  renderAVL();
+}
+
+function buildTrie(){
+  let word = 'cat';
+  const chips = document.getElementById('trie-chips');
+  const trieNodes = [
+    {id:'root',x:200,y:28,v:'root',c:'gray',r:16},
+    {id:'c',x:110,y:84,v:'c',c:'purple',r:20},{id:'d',x:290,y:84,v:'d',c:'teal',r:20},
+    {id:'a',x:110,y:144,v:'a',c:'purple',r:20},{id:'o',x:290,y:144,v:'o',c:'teal',r:20},
+    {id:'t',x:70,y:204,v:'t',c:'purple',r:20},{id:'r',x:150,y:204,v:'r',c:'purple',r:20},{id:'g',x:290,y:204,v:'g',c:'teal',r:20},
+  ];
+  const trieEdges = [[192,42,118,66],[208,42,282,66],[110,102,110,126],[290,102,290,126],[100,162,78,186],[120,162,142,186],[290,162,290,186]];
+
+  ['cat','car','dog'].forEach(w=>{
+    const b = document.createElement('button');
+    b.className = 'chip'+(w===word?' on':'');
+    b.textContent = '"'+w+'"';
+    b.dataset.w = w;
+    b.onclick = ()=>{word=w;renderTrie();chips.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.w===w))};
+    chips.appendChild(b);
+  });
+
+  function renderTrie(){
+    const path = TRIE_PATHS[word];
+    let svg = trieEdges.map(e=>svgEdge(...e)).join('');
+    trieNodes.forEach(n=>{
+      svg += svgNode(n.x,n.y,n.v,n.c,n.r||20,path.includes(n.id));
+    });
+    document.getElementById('vis-trie').innerHTML = svgWrap(400,230,svg);
+  }
+  renderTrie();
+}
+
+function buildHeap(){
+  const nodes = [{x:200,y:30,v:'50',c:'coral'},{x:110,y:90,v:'30',c:'amber'},{x:290,y:90,v:'40',c:'amber'},
+    {x:65,y:150,v:'10',c:'gray'},{x:155,y:150,v:'20',c:'gray'},{x:245,y:150,v:'35',c:'gray'},{x:335,y:150,v:'15',c:'gray'}];
+  const edges = [[188,48,122,72],[212,48,278,72],[100,108,77,132],[120,108,143,132],[280,108,257,132],[300,108,323,132]];
+  let svg = edges.map(e=>svgEdge(...e)).join('');
+  nodes.forEach(n=>{ svg += svgNode(n.x,n.y,n.v,n.c); });
+  svg += `<text x="200" y="190" text-anchor="middle" font-size="11" fill="var(--dim)">Max-heap: parent ≥ children at every level</text>`;
+  document.getElementById('vis-heap').innerHTML = svgWrap(400,200,svg);
+}
+
+function buildSegment(){
+  const nodes = [
+    {x:230,y:28,v:'36',c:'purple',r:22},{x:130,y:90,v:'15',c:'teal',r:20},{x:330,y:90,v:'21',c:'teal',r:20},
+    {x:75,y:152,v:'8',c:'coral',r:18},{x:175,y:152,v:'7',c:'coral',r:18},{x:280,y:152,v:'12',c:'coral',r:18},{x:380,y:152,v:'9',c:'coral',r:18},
+    {x:50,y:208,v:'3',c:'gray',r:16},{x:100,y:208,v:'5',c:'gray',r:16},{x:255,y:208,v:'4',c:'gray',r:16},{x:305,y:208,v:'8',c:'gray',r:16},
+  ];
+  const edges = [[216,46,144,72],[244,46,316,72],[118,108,89,134],[142,108,161,134],[318,108,294,134],[342,108,366,134],
+    [63,168,56,192],[87,168,94,192],[268,168,261,192],[292,168,299,192]];
+  let svg = edges.map(e=>svgEdge(...e)).join('');
+  nodes.forEach(n=>{ svg += svgNode(n.x,n.y,n.v,n.c,n.r||20); });
+  document.getElementById('vis-segment').innerHTML = svgWrap(440,236,svg);
+}
+
+function buildRoadmap(){
+  const el = document.getElementById('roadmap-list');
+  ROADMAP.forEach(p=>{
+    el.innerHTML += `<div class="phase"><div class="phase-head"><span class="badge ${p.badge}">${p.level}</span><span class="phase-title">${p.title}</span></div>
+      <div class="phase-topics">${p.topics}</div><div class="phase-probs">Practice: ${p.probs}</div></div>`;
+  });
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+buildNav();
+buildBasics();
+buildTraversals();
+buildBST();
+buildPatterns();
+buildAVL();
+buildTrie();
+buildHeap();
+buildSegment();
+buildRoadmap();
+goTo('basics');
+</script>
+</body>
+</html>
