@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hashing in Python — Zero to Hero</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0C0F14;--bg2:#131720;--bg3:#1A1F2B;--bg4:#222836;
+  --text:#E2E4EA;--tm:#8B90A0;--td:#5A5F72;
+  --ac:#6EEBC0;--ac2:#4CC9A0;--acd:rgba(110,235,192,.08);
+  --pu:#B4A0FF;--pud:rgba(180,160,255,.1);
+  --co:#FF8A6E;--cod:rgba(255,138,110,.08);
+  --am:#FFD06E;--amd:rgba(255,208,110,.08);
+  --bl:#6EB4FF;--bld:rgba(110,180,255,.08);
+  --rd:#FF6E6E;
+  --bd:rgba(255,255,255,.06);--bd2:rgba(255,255,255,.1);
+  --cbg:#0A0D12;
+  --fd:'Fraunces',serif;--fb:'Outfit',sans-serif;--fm:'DM Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-weight:300;line-height:1.75;font-size:16px;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* Progress bar */
+.sp{position:fixed;top:0;left:0;width:0%;height:2px;background:linear-gradient(90deg,var(--ac),var(--pu));z-index:10000;transition:width .1s}
+
+/* Side nav */
+.sn{position:fixed;left:0;top:0;width:280px;height:100vh;background:var(--bg2);border-right:1px solid var(--bd);padding:2rem 1.5rem;overflow-y:auto;z-index:100;display:flex;flex-direction:column;gap:4px}
+.sn .logo{font-family:var(--fd);font-size:18px;font-weight:700;color:var(--ac);margin-bottom:2px}
+.sn .sub{font-size:11px;color:var(--td);margin-bottom:2rem;text-transform:uppercase;letter-spacing:2px;font-weight:500}
+.nl{display:block;padding:8px 14px;border-radius:8px;color:var(--tm);text-decoration:none;font-size:13px;transition:all .2s;border-left:2px solid transparent}
+.nl:hover{color:var(--text);background:var(--bg3)}
+.nl.active{color:var(--ac);background:var(--acd);border-left-color:var(--ac)}
+.nd{height:1px;background:var(--bd);margin:10px 0}
+
+/* Main content */
+.mn{margin-left:280px;padding:3rem 4rem 6rem;max-width:940px}
+
+/* Hero */
+.hero{padding:4rem 0 3rem;position:relative}
+.hero::after{content:'#';position:absolute;right:-40px;top:-20px;font-family:var(--fd);font-size:200px;font-weight:700;color:rgba(110,235,192,.03);pointer-events:none;line-height:1}
+.hero h1{font-family:var(--fd);font-size:48px;font-weight:700;line-height:1.1;letter-spacing:-1.5px;margin-bottom:1rem;background:linear-gradient(135deg,var(--text),var(--ac));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:17px;color:var(--tm);max-width:560px}
+
+/* Chapter tag */
+.ct{display:inline-flex;align-items:center;gap:6px;font-family:var(--fm);font-size:12px;font-weight:500;color:var(--ac);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+.ct::before{content:'';width:28px;height:1px;background:var(--ac);display:block}
+
+/* Sections */
+section{padding:4rem 0 2rem;border-top:1px solid var(--bd);opacity:0;transform:translateY(30px);transition:opacity .6s,transform .6s}
+section.v{opacity:1;transform:translateY(0)}
+
+/* Typography */
+h2{font-family:var(--fd);font-size:32px;font-weight:600;letter-spacing:-.8px;margin-bottom:1.25rem}
+h3{font-family:var(--fd);font-size:21px;font-weight:600;margin:2.5rem 0 1rem}
+h4{font-size:16px;font-weight:600;margin:2rem 0 .75rem;color:var(--pu)}
+p{margin-bottom:1rem;color:var(--tm)}
+p strong,p b{color:var(--text);font-weight:500}
+.ic{font-family:var(--fm);font-size:.86em;background:var(--bg3);padding:2px 8px;border-radius:5px;color:var(--ac);border:1px solid var(--bd)}
+
+/* Code blocks */
+.cb{background:var(--cbg);border:1px solid var(--bd);border-radius:12px;margin:1.5rem 0;overflow:hidden}
+.chd{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:var(--bg3);border-bottom:1px solid var(--bd);font-family:var(--fm);font-size:12px;color:var(--td)}
+.chd .lg{color:var(--ac);font-weight:500}
+.cpb{background:none;border:1px solid var(--bd2);color:var(--tm);padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:var(--fm);transition:all .2s}
+.cpb:hover{background:var(--bg4);color:var(--text)}
+pre{padding:1.25rem 1.5rem;overflow-x:auto;font-family:var(--fm);font-size:13.5px;line-height:1.75;color:var(--text);white-space:pre}
+.c{color:var(--td)}.k{color:var(--pu)}.s{color:var(--ac)}.f{color:var(--bl)}.n{color:var(--co)}.b{color:var(--am)}
+
+/* Diagram card */
+.dc{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:2rem;margin:2rem 0;position:relative;overflow:hidden}
+.dc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--ac),transparent);opacity:.3}
+.dc svg text{font-family:var(--fm)}
+.dl{font-size:12px;color:var(--td);font-family:var(--fm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:1rem}
+
+/* Formula card */
+.fc{background:var(--bg3);border:1px solid var(--bd2);border-radius:14px;padding:1.5rem 2rem;margin:1.5rem 0}
+.fc .ft{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px}
+.fc .ff{font-family:var(--fm);font-size:17px;color:var(--ac);padding:10px 0 8px;letter-spacing:.5px;line-height:1.8}
+.fc .fn{font-size:13px;color:var(--td);line-height:1.7}
+.fc .fn strong{color:var(--tm);font-weight:500}
+
+/* Interactive card */
+.wc{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:2rem;margin:2rem 0;position:relative}
+.wc::before{content:'INTERACTIVE';position:absolute;top:12px;right:16px;font-family:var(--fm);font-size:10px;letter-spacing:2px;color:var(--ac);opacity:.5}
+
+/* Tables */
+.t2{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:14px}
+.t2 th{text-align:left;padding:12px 16px;font-weight:500;color:var(--td);font-size:12px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--bd2)}
+.t2 td{padding:12px 16px;border-bottom:1px solid var(--bd);color:var(--tm)}
+.t2 tr:last-child td{border-bottom:none}
+.t2 .hr td{color:var(--text);font-weight:500;background:var(--acd)}
+
+/* Badges */
+.bf{background:rgba(110,235,192,.15);color:var(--ac);padding:2px 10px;border-radius:20px;font-family:var(--fm);font-size:12px}
+.bm{background:var(--amd);color:var(--am);padding:2px 10px;border-radius:20px;font-family:var(--fm);font-size:12px}
+.bs{background:rgba(255,110,110,.12);color:var(--rd);padding:2px 10px;border-radius:20px;font-family:var(--fm);font-size:12px}
+
+/* Callouts */
+.co{padding:1.25rem 1.5rem;border-radius:12px;margin:1.5rem 0;border-left:3px solid;font-size:14.5px}
+.coa{background:var(--acd);border-color:var(--ac)}
+.cop{background:var(--pud);border-color:var(--pu)}
+.coc{background:var(--cod);border-color:var(--co)}
+.com{background:var(--amd);border-color:var(--am)}
+.cob{background:var(--bld);border-color:var(--bl)}
+.co p{color:var(--text);margin-bottom:0}
+
+/* Pattern grid */
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1.5rem 0}
+.pc{background:var(--bg3);border:1px solid var(--bd);border-radius:12px;padding:1.25rem 1.5rem;transition:all .2s}
+.pc:hover{border-color:var(--bd2);transform:translateY(-2px)}
+.pc .pn{font-family:var(--fd);font-size:28px;font-weight:700;color:var(--ac);opacity:.25;line-height:1}
+.pc .pt{font-weight:600;font-size:15px;color:var(--text);margin-bottom:4px}
+.pc .pd{font-size:13px;color:var(--td)}
+
+/* Probing formula grid */
+.prg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:1.5rem 0}
+.prc{background:var(--bg3);border:1px solid var(--bd);border-radius:12px;padding:1.25rem;transition:border-color .3s}
+.prc:hover{border-color:var(--bd2)}
+.prc .prn{font-weight:600;font-size:14px;margin-bottom:6px}
+.prc .prf{font-family:var(--fm);font-size:13px;padding:8px 12px;background:var(--cbg);border-radius:8px;margin:8px 0;border:1px solid var(--bd);line-height:1.6}
+.prc .prd{font-size:12.5px;color:var(--td);line-height:1.7}
+.prc .prd strong{color:var(--tm)}
+
+/* Decision map */
+.dm{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:1.5rem;margin:1.5rem 0;font-family:var(--fm);font-size:13px}
+.dr{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--bd);align-items:baseline}
+.dr:last-child{border-bottom:none}
+.dq{color:var(--tm);flex:1}.da{color:var(--ac);font-weight:500;white-space:nowrap}
+
+/* Linear probing widget */
+.lc{display:inline-flex;align-items:center;justify-content:center;width:78px;height:44px;font-family:var(--fm);font-size:12px;border-radius:8px;border:1px solid var(--bd2);background:var(--bg3);color:var(--td);transition:all .3s;margin:2px}
+.lc.fi{background:var(--acd);border-color:var(--ac2);color:var(--ac)}
+.lc.pr{background:var(--amd);border-color:var(--am);color:var(--am)}
+.lc.tg{background:var(--pud);border-color:var(--pu);color:var(--pu);animation:cp .5s ease}
+@keyframes cp{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+.li{font-family:var(--fm);font-size:11px;color:var(--td);text-align:center;width:78px;margin:0 2px}
+.ll{font-family:var(--fm);font-size:12px;color:var(--tm);padding:12px 16px;background:var(--cbg);border-radius:10px;max-height:180px;overflow-y:auto;margin-top:12px;line-height:1.9;border:1px solid var(--bd)}
+.wb{background:var(--bg4);border:1px solid var(--bd2);color:var(--tm);padding:7px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:var(--fm);transition:all .2s;margin:3px}
+.wb:hover{background:var(--acd);color:var(--ac);border-color:var(--ac)}
+.wb.rs:hover{background:rgba(255,110,110,.1);color:var(--rd);border-color:var(--rd)}
+
+/* Walkthrough steps */
+.ws{padding:14px 18px;border-radius:10px;border:1px solid var(--bd);margin:6px 0;font-family:var(--fm);font-size:13px;background:var(--bg3);color:var(--tm);line-height:1.8}
+.wh{color:var(--pu);font-weight:500}.wf{color:var(--ac);font-weight:500}
+
+/* Footer */
+.ftr{margin-top:4rem;padding:2rem 0;border-top:1px solid var(--bd);font-size:13px;color:var(--td);text-align:center;font-family:var(--fm)}
+
+@media(max-width:1000px){
+  .sn{display:none}.mn{margin-left:0;padding:2rem 1.5rem 4rem}
+  .hero h1{font-size:34px}h2{font-size:26px}
+  .pg,.prg{grid-template-columns:1fr}
+  .hero::after{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="sp" id="sp"></div>
+
+<!-- ═══ NAVIGATION ═══ -->
+<nav class="sn">
+  <div class="logo"># Hashing</div>
+  <div class="sub">Python DSA Guide</div>
+  <a class="nl active" href="#c1">1 — What is hashing?</a>
+  <a class="nl" href="#c2">2 — Hash functions</a>
+  <a class="nl" href="#c3">3 — Building a hash table</a>
+  <a class="nl" href="#c4">4 — Collision resolution</a>
+  <a class="nl" href="#c5">5 — Probing formulas</a>
+  <a class="nl" href="#c6">6 — The clustering problem</a>
+  <a class="nl" href="#c7">7 — Load factor &amp; resizing</a>
+  <a class="nl" href="#c8">8 — dict &amp; set internals</a>
+  <a class="nl" href="#c9">9 — Time complexity</a>
+  <a class="nl" href="#c10">10 — DSA patterns</a>
+  <a class="nl" href="#c11">11 — Advanced techniques</a>
+  <a class="nl" href="#c12">12 — When not to hash</a>
+  <div class="nd"></div>
+  <a class="nl" href="#ref">Quick reference</a>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<main class="mn">
+
+<div class="hero">
+  <h1>Hashing in Python<br>Zero to Hero</h1>
+  <p>A complete visual guide — hash functions, probing formulas, collision resolution, clustering, load factors, rehashing, Python dict &amp; set internals, and the essential DSA patterns.</p>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHAPTER 1 — WHAT IS HASHING             -->
+<!-- ════════════════════════════════════════ -->
+<section id="c1">
+<div class="ct">Chapter 01</div>
+<h2>What is hashing?</h2>
+<p>Hashing converts data of any size into a <strong>fixed-size integer</strong> — a fingerprint for your data. That integer maps directly to an array index, so you can store and retrieve in <strong>O(1)</strong> average time.</p>
+
+<div class="dc">
+<div class="dl">Core concept: key → hash → index → bucket</div>
+<svg width="100%" viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#5A5F72" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<rect x="30" y="40" width="120" height="40" rx="8" fill="rgba(110,235,192,.1)" stroke="#4CC9A0" stroke-width=".5"/><text x="90" y="65" text-anchor="middle" fill="#6EEBC0" font-size="14">"apple"</text>
+<rect x="30" y="120" width="120" height="40" rx="8" fill="rgba(110,235,192,.1)" stroke="#4CC9A0" stroke-width=".5"/><text x="90" y="145" text-anchor="middle" fill="#6EEBC0" font-size="14">"banana"</text>
+<rect x="30" y="200" width="120" height="40" rx="8" fill="rgba(110,235,192,.1)" stroke="#4CC9A0" stroke-width=".5"/><text x="90" y="225" text-anchor="middle" fill="#6EEBC0" font-size="14">"cherry"</text>
+<text x="90" y="268" text-anchor="middle" fill="#5A5F72" font-size="12">Keys (any type)</text>
+<line x1="150" y1="60" x2="240" y2="130" stroke="#5A5F72" stroke-width=".5" marker-end="url(#a1)"/>
+<line x1="150" y1="140" x2="240" y2="140" stroke="#5A5F72" stroke-width=".5" marker-end="url(#a1)"/>
+<line x1="150" y1="220" x2="240" y2="152" stroke="#5A5F72" stroke-width=".5" marker-end="url(#a1)"/>
+<path d="M246 100 L380 100 L358 185 L268 185 Z" fill="rgba(180,160,255,.1)" stroke="#B4A0FF" stroke-width=".5"/>
+<text x="313" y="138" text-anchor="middle" fill="#B4A0FF" font-size="14" font-weight="500">hash(key)</text>
+<text x="313" y="162" text-anchor="middle" fill="#8B90A0" font-size="12">% table_size</text>
+<line x1="380" y1="120" x2="458" y2="60" stroke="#5A5F72" stroke-width=".5" marker-end="url(#a1)"/>
+<line x1="380" y1="140" x2="458" y2="140" stroke="#5A5F72" stroke-width=".5" marker-end="url(#a1)"/>
+<line x1="380" y1="160" x2="458" y2="228" stroke="#5A5F72" stroke-width=".5" marker-end="url(#a1)"/>
+<rect x="460" y="22" width="56" height="32" rx="4" fill="var(--bg4)" stroke="var(--bd2)" stroke-width=".5"/><text x="488" y="43" text-anchor="middle" fill="#5A5F72" font-size="12">[0]</text>
+<rect x="460" y="58" width="56" height="32" rx="4" fill="rgba(255,208,110,.12)" stroke="#FFD06E" stroke-width=".5"/><text x="488" y="79" text-anchor="middle" fill="#FFD06E" font-size="12">[1]</text>
+<rect x="460" y="94" width="56" height="32" rx="4" fill="var(--bg4)" stroke="var(--bd2)" stroke-width=".5"/><text x="488" y="115" text-anchor="middle" fill="#5A5F72" font-size="12">[2]</text>
+<rect x="460" y="130" width="56" height="32" rx="4" fill="rgba(255,208,110,.12)" stroke="#FFD06E" stroke-width=".5"/><text x="488" y="151" text-anchor="middle" fill="#FFD06E" font-size="12">[3]</text>
+<rect x="460" y="166" width="56" height="32" rx="4" fill="var(--bg4)" stroke="var(--bd2)" stroke-width=".5"/><text x="488" y="187" text-anchor="middle" fill="#5A5F72" font-size="12">[4]</text>
+<rect x="460" y="202" width="56" height="32" rx="4" fill="var(--bg4)" stroke="var(--bd2)" stroke-width=".5"/><text x="488" y="223" text-anchor="middle" fill="#5A5F72" font-size="12">[5]</text>
+<rect x="460" y="238" width="56" height="32" rx="4" fill="rgba(255,208,110,.12)" stroke="#FFD06E" stroke-width=".5"/><text x="488" y="259" text-anchor="middle" fill="#FFD06E" font-size="12">[6]</text>
+<text x="530" y="79" fill="#8B90A0" font-size="12">"apple"</text>
+<text x="530" y="151" fill="#8B90A0" font-size="12">"banana"</text>
+<text x="530" y="259" fill="#8B90A0" font-size="12">"cherry"</text>
+<text x="488" y="290" text-anchor="middle" fill="#5A5F72" font-size="12">Array (fixed size)</text>
+</svg>
+</div>
+
+<div class="cb"><div class="chd"><span class="lg">python</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="c"># Python's hash() returns an integer for any hashable object</span>
+<span class="b">print</span>(<span class="b">hash</span>(<span class="s">"apple"</span>))    <span class="c"># e.g. 2572080938546383898</span>
+<span class="b">print</span>(<span class="b">hash</span>(<span class="s">"banana"</span>))   <span class="c"># e.g. -1649683334505052884</span>
+<span class="b">print</span>(<span class="b">hash</span>(<span class="n">42</span>))         <span class="c"># 42  (small ints hash to themselves!)</span>
+<span class="b">print</span>(<span class="b">hash</span>((<span class="n">1</span>,<span class="n">2</span>,<span class="n">3</span>)))    <span class="c"># tuples are hashable</span>
+
+<span class="c"># To map hash → array index, use modulo</span>
+table_size = <span class="n">7</span>
+index = <span class="b">hash</span>(<span class="s">"apple"</span>) % table_size   <span class="c"># gives 0-6</span>
+<span class="b">print</span>(<span class="s">f'"apple" goes to index {index}'</span>)</pre>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHAPTER 2 — HASH FUNCTIONS              -->
+<!-- ════════════════════════════════════════ -->
+<section id="c2">
+<div class="ct">Chapter 02</div>
+<h2>Hash functions deep dive</h2>
+<p>A hash function <span class="ic">h(key)</span> maps a key from the universe <strong>U</strong> to the range <strong>[0, m-1]</strong> where <strong>m</strong> is the table size. A good hash function is (1) deterministic, (2) uniformly distributed, (3) has an avalanche effect — a small change in input → large change in output, and (4) is fast to compute.</p>
+
+<h3>The division method</h3>
+<div class="fc">
+  <div class="ft">Division method formula</div>
+  <div class="ff">h(k) = k mod m</div>
+  <div class="fn">Simplest method. Choose <strong>m</strong> as a prime not close to a power of 2. If m = 2<sup>p</sup>, only the lowest p bits matter — bad distribution. Good sizes: <strong>7, 13, 31, 61, 127, 251, 509, 1021</strong>.</div>
+</div>
+<div class="cb"><div class="chd"><span class="lg">python — division method</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">def</span> <span class="f">hash_division</span>(key, m):
+    <span class="s">"""h(k) = k mod m  —  m should be prime."""</span>
+    <span class="k">return</span> key % m
+
+<span class="c"># Example: key=42, m=7</span>
+<span class="b">print</span>(hash_division(<span class="n">42</span>, <span class="n">7</span>))   <span class="c"># 42 % 7 = 0</span>
+<span class="b">print</span>(hash_division(<span class="n">15</span>, <span class="n">7</span>))   <span class="c"># 15 % 7 = 1</span>
+<span class="b">print</span>(hash_division(<span class="n">99</span>, <span class="n">7</span>))   <span class="c"># 99 % 7 = 1  ← collision with 15!</span></pre>
+</div>
+
+<h3>The multiplication method</h3>
+<div class="fc">
+  <div class="ft">Multiplication method formula</div>
+  <div class="ff">h(k) = ⌊ m × (k × A mod 1) ⌋</div>
+  <div class="fn">Knuth suggests <strong>A ≈ (√5 − 1)/2 ≈ 0.6180339887</strong> (golden ratio conjugate). Advantage: <strong>m does not need to be prime</strong> — works with any table size, even powers of 2.</div>
+</div>
+<div class="cb"><div class="chd"><span class="lg">python — multiplication method</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">import</span> math
+
+<span class="k">def</span> <span class="f">hash_multiplication</span>(key, m):
+    <span class="s">"""h(k) = floor(m * (k * A mod 1))"""</span>
+    A = <span class="n">0.6180339887</span>   <span class="c"># (√5 - 1) / 2</span>
+    <span class="k">return</span> math.floor(m * ((key * A) % <span class="n">1</span>))
+
+<span class="c"># Example: key=123456, m=16</span>
+<span class="b">print</span>(hash_multiplication(<span class="n">123456</span>, <span class="n">16</span>))  <span class="c"># Distributes well even with m=2^4</span></pre>
+</div>
+
+<h3>Polynomial rolling hash (for strings)</h3>
+<div class="fc">
+  <div class="ft">Polynomial hash formula</div>
+  <div class="ff">h(s) = ( s[0]×p<sup>n-1</sup> + s[1]×p<sup>n-2</sup> + … + s[n-1] ) mod m</div>
+  <div class="fn">Each character is weighted by a power of prime base <strong>p</strong> (typically 31 or 37). Order-dependent: "abc" ≠ "cba". Foundation of the <strong>Rabin-Karp string matching</strong> algorithm.</div>
+</div>
+<div class="cb"><div class="chd"><span class="lg">python — polynomial hash</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">def</span> <span class="f">hash_string</span>(s, m, p=<span class="n">31</span>):
+    <span class="s">"""Polynomial rolling hash for strings."""</span>
+    h = <span class="n">0</span>
+    p_pow = <span class="n">1</span>
+    <span class="k">for</span> ch <span class="k">in</span> s:
+        h = (h + (<span class="b">ord</span>(ch) - <span class="b">ord</span>(<span class="s">'a'</span>) + <span class="n">1</span>) * p_pow) % m
+        p_pow = (p_pow * p) % m
+    <span class="k">return</span> h
+
+<span class="c"># "abc" → 1×1 + 2×31 + 3×961 = 1 + 62 + 2883 = 2946</span>
+<span class="b">print</span>(hash_string(<span class="s">"abc"</span>, <span class="n">1000003</span>))    <span class="c"># 2946</span>
+<span class="b">print</span>(hash_string(<span class="s">"cba"</span>, <span class="n">1000003</span>))    <span class="c"># Different! Order matters</span></pre>
+</div>
+
+<h3>Universal hashing</h3>
+<div class="fc">
+  <div class="ft">Universal hash family formula</div>
+  <div class="ff">h<sub>a,b</sub>(k) = ((a × k + b) mod p) mod m</div>
+  <div class="fn">Choose <strong>a</strong> ∈ {1, …, p-1} and <strong>b</strong> ∈ {0, …, p-1} randomly, where <strong>p</strong> is prime &gt; any key. Collision probability between any two distinct keys ≤ <strong>1/m</strong>. Protects against adversarial inputs.</div>
+</div>
+<div class="cb"><div class="chd"><span class="lg">python — universal hashing</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">import</span> random
+
+<span class="k">def</span> <span class="f">universal_hash</span>(key, m, p=<span class="n">104729</span>):
+    <span class="s">"""h(k) = ((a*k + b) mod p) mod m"""</span>
+    a = random.randint(<span class="n">1</span>, p - <span class="n">1</span>)
+    b = random.randint(<span class="n">0</span>, p - <span class="n">1</span>)
+    <span class="k">return</span> ((a * key + b) % p) % m</pre>
+</div>
+
+<div class="co coa"><p><strong>Properties of a good hash function:</strong> (1) Deterministic — same input always gives same output. (2) Uniform — spreads keys evenly across all slots. (3) Avalanche effect — 1-bit change in input flips ~50% of output bits. (4) Fast — O(1) for fixed-size keys, O(k) for strings of length k.</p></div>
+</section>
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHAPTER 3 — BUILDING A HASH TABLE       -->
+<!-- ════════════════════════════════════════ -->
+<section id="c3">
+<div class="ct">Chapter 03</div>
+<h2>Building a hash table from scratch</h2>
+<p>A hash table is an array of <strong>m</strong> slots (buckets), indexed 0 to m-1. Every operation follows the same pattern: compute hash → go to bucket → insert/search/delete.</p>
+
+<div class="dc">
+<div class="dl">Operations flow: all go through hash → bucket</div>
+<svg width="100%" viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#5A5F72" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<rect x="30" y="28" width="160" height="48" rx="8" fill="rgba(110,235,192,.1)" stroke="#4CC9A0" stroke-width=".5"/>
+<text x="110" y="48" text-anchor="middle" fill="#6EEBC0" font-size="14" font-weight="500">insert(key, val)</text>
+<text x="110" y="66" text-anchor="middle" fill="#8B90A0" font-size="12">O(1) average</text>
+<line x1="190" y1="52" x2="248" y2="98" stroke="#5A5F72" stroke-width=".5" marker-end="url(#a2)"/>
+<rect x="30" y="90" width="160" height="48" rx="8" fill="rgba(110,180,255,.1)" stroke="#6EB4FF" stroke-width=".5"/>
+<text x="110" y="110" text-anchor="middle" fill="#6EB4FF" font-size="14" font-weight="500">search(key)</text>
+<text x="110" y="128" text-anchor="middle" fill="#8B90A0" font-size="12">O(1) average</text>
+<line x1="190" y1="114" x2="248" y2="114" stroke="#5A5F72" stroke-width=".5" marker-end="url(#a2)"/>
+<rect x="30" y="152" width="160" height="48" rx="8" fill="rgba(255,138,110,.1)" stroke="#FF8A6E" stroke-width=".5"/>
+<text x="110" y="172" text-anchor="middle" fill="#FF8A6E" font-size="14" font-weight="500">delete(key)</text>
+<text x="110" y="190" text-anchor="middle" fill="#8B90A0" font-size="12">O(1) average</text>
+<line x1="190" y1="176" x2="248" y2="130" stroke="#5A5F72" stroke-width=".5" marker-end="url(#a2)"/>
+<rect x="252" y="86" width="166" height="56" rx="8" fill="rgba(180,160,255,.1)" stroke="#B4A0FF" stroke-width=".5"/>
+<text x="335" y="108" text-anchor="middle" fill="#B4A0FF" font-size="14" font-weight="500">Compute hash</text>
+<text x="335" y="128" text-anchor="middle" fill="#8B90A0" font-size="12">idx = h(key) % m</text>
+<line x1="418" y1="114" x2="468" y2="114" stroke="#5A5F72" stroke-width=".5" marker-end="url(#a2)"/>
+<rect x="472" y="86" width="170" height="56" rx="8" fill="rgba(255,208,110,.1)" stroke="#FFD06E" stroke-width=".5"/>
+<text x="557" y="108" text-anchor="middle" fill="#FFD06E" font-size="14" font-weight="500">Go to bucket[idx]</text>
+<text x="557" y="128" text-anchor="middle" fill="#8B90A0" font-size="12">Direct array access</text>
+</svg>
+</div>
+
+<div class="cb"><div class="chd"><span class="lg">python — basic hash table (no collision handling)</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">class</span> <span class="f">HashTable</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, size=<span class="n">7</span>):
+        self.size = size
+        self.table = [<span class="k">None</span>] * size   <span class="c"># Fixed-size array of buckets</span>
+        self.count = <span class="n">0</span>
+
+    <span class="k">def</span> <span class="f">_hash</span>(self, key):
+        <span class="s">"""h(k) = hash(k) mod m"""</span>
+        <span class="k">return</span> <span class="b">hash</span>(key) % self.size
+
+    <span class="k">def</span> <span class="f">insert</span>(self, key, value):
+        index = self._hash(key)
+        self.table[index] = (key, value)   <span class="c"># ⚠️ Overwrites on collision!</span>
+        self.count += <span class="n">1</span>
+
+    <span class="k">def</span> <span class="f">search</span>(self, key):
+        index = self._hash(key)
+        entry = self.table[index]
+        <span class="k">return</span> entry[<span class="n">1</span>] <span class="k">if</span> entry <span class="k">and</span> entry[<span class="n">0</span>] == key <span class="k">else</span> <span class="k">None</span>
+
+    <span class="k">def</span> <span class="f">delete</span>(self, key):
+        index = self._hash(key)
+        <span class="k">if</span> self.table[index] <span class="k">and</span> self.table[index][<span class="n">0</span>] == key:
+            self.table[index] = <span class="k">None</span>
+            self.count -= <span class="n">1</span>
+
+<span class="c"># Usage</span>
+ht = HashTable()
+ht.insert(<span class="s">"apple"</span>, <span class="n">1.50</span>)
+ht.insert(<span class="s">"banana"</span>, <span class="n">0.75</span>)
+<span class="b">print</span>(ht.search(<span class="s">"apple"</span>))    <span class="c"># 1.50</span>
+<span class="b">print</span>(ht.search(<span class="s">"grape"</span>))    <span class="c"># None</span></pre>
+</div>
+
+<div class="co coc"><p><strong>Critical flaw:</strong> What happens when <span class="ic">hash("apple") % 7 == hash("grape") % 7</span>? Both keys want the same slot. That's called a <strong>collision</strong> — and handling it correctly is the most important concept in hashing.</p></div>
+</section>
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHAPTER 4 — COLLISION RESOLUTION        -->
+<!-- ════════════════════════════════════════ -->
+<section id="c4">
+<div class="ct">Chapter 04</div>
+<h2>Collision resolution</h2>
+<p>Two families of strategies: <strong>separate chaining</strong> (linked lists in each bucket) and <strong>open addressing</strong> (probe for the next empty slot inside the array itself).</p>
+
+<h3>Strategy 1 — Separate chaining</h3>
+<p>Each bucket holds a list. Colliding keys append to the same list. Search scans the list at the target bucket.</p>
+
+<div class="dc">
+<div class="dl">Separate chaining — lists in each bucket</div>
+<svg width="100%" viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#4CC9A0" stroke-width="1.5" stroke-linecap="round"/></marker>
+<marker id="a3b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#6EB4FF" stroke-width="1.5" stroke-linecap="round"/></marker>
+<marker id="a3c" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#FF8A6E" stroke-width="1.5" stroke-linecap="round"/></marker>
+</defs>
+<rect x="30" y="20" width="60" height="32" rx="4" fill="var(--bg4)" stroke="var(--bd2)" stroke-width=".5"/><text x="60" y="41" text-anchor="middle" fill="#5A5F72" font-size="12">[0]</text><text x="108" y="41" fill="#5A5F72" font-size="12">None</text>
+<rect x="30" y="58" width="60" height="32" rx="4" fill="rgba(110,235,192,.1)" stroke="#4CC9A0" stroke-width=".5"/><text x="60" y="79" text-anchor="middle" fill="#6EEBC0" font-size="12">[1]</text>
+<line x1="90" y1="74" x2="128" y2="74" stroke="#4CC9A0" stroke-width=".5" marker-end="url(#a3)"/>
+<rect x="132" y="58" width="128" height="32" rx="8" fill="rgba(110,235,192,.06)" stroke="#4CC9A0" stroke-width=".5"/><text x="196" y="79" text-anchor="middle" fill="#6EEBC0" font-size="12">"apple": 1.50</text>
+<line x1="260" y1="74" x2="296" y2="74" stroke="#4CC9A0" stroke-width=".5" marker-end="url(#a3)"/>
+<rect x="300" y="58" width="128" height="32" rx="8" fill="rgba(110,235,192,.06)" stroke="#4CC9A0" stroke-width=".5"/><text x="364" y="79" text-anchor="middle" fill="#6EEBC0" font-size="12">"grape": 2.00</text>
+<text x="446" y="79" fill="#5A5F72" font-size="12">→ None</text>
+<rect x="30" y="96" width="60" height="32" rx="4" fill="var(--bg4)" stroke="var(--bd2)" stroke-width=".5"/><text x="60" y="117" text-anchor="middle" fill="#5A5F72" font-size="12">[2]</text><text x="108" y="117" fill="#5A5F72" font-size="12">None</text>
+<rect x="30" y="134" width="60" height="32" rx="4" fill="rgba(110,180,255,.1)" stroke="#6EB4FF" stroke-width=".5"/><text x="60" y="155" text-anchor="middle" fill="#6EB4FF" font-size="12">[3]</text>
+<line x1="90" y1="150" x2="128" y2="150" stroke="#6EB4FF" stroke-width=".5" marker-end="url(#a3b)"/>
+<rect x="132" y="134" width="140" height="32" rx="8" fill="rgba(110,180,255,.06)" stroke="#6EB4FF" stroke-width=".5"/><text x="202" y="155" text-anchor="middle" fill="#6EB4FF" font-size="12">"banana": 0.75</text>
+<rect x="30" y="172" width="60" height="32" rx="4" fill="rgba(255,138,110,.1)" stroke="#FF8A6E" stroke-width=".5"/><text x="60" y="193" text-anchor="middle" fill="#FF8A6E" font-size="12">[4]</text>
+<line x1="90" y1="188" x2="128" y2="188" stroke="#FF8A6E" stroke-width=".5" marker-end="url(#a3c)"/>
+<rect x="132" y="172" width="132" height="32" rx="8" fill="rgba(255,138,110,.06)" stroke="#FF8A6E" stroke-width=".5"/><text x="198" y="193" text-anchor="middle" fill="#FF8A6E" font-size="12">"cherry": 3.25</text>
+<line x1="264" y1="188" x2="296" y2="188" stroke="#FF8A6E" stroke-width=".5" marker-end="url(#a3c)"/>
+<rect x="300" y="172" width="120" height="32" rx="8" fill="rgba(255,138,110,.06)" stroke="#FF8A6E" stroke-width=".5"/><text x="360" y="193" text-anchor="middle" fill="#FF8A6E" font-size="12">"mango": 2.5</text>
+<rect x="30" y="210" width="60" height="32" rx="4" fill="var(--bg4)" stroke="var(--bd2)" stroke-width=".5"/><text x="60" y="231" text-anchor="middle" fill="#5A5F72" font-size="12">[5]</text><text x="108" y="231" fill="#5A5F72" font-size="12">None</text>
+<text x="360" y="50" text-anchor="middle" fill="#8B90A0" font-size="11">← Collision! Both hash to [1]</text>
+</svg>
+</div>
+
+<div class="cb"><div class="chd"><span class="lg">python — separate chaining (full implementation)</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">class</span> <span class="f">HashTableChaining</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, size=<span class="n">7</span>):
+        self.size = size
+        self.table = [[] <span class="k">for</span> _ <span class="k">in</span> <span class="b">range</span>(size)]   <span class="c"># Each bucket is a list</span>
+        self.count = <span class="n">0</span>
+
+    <span class="k">def</span> <span class="f">_hash</span>(self, key):
+        <span class="k">return</span> <span class="b">hash</span>(key) % self.size
+
+    <span class="k">def</span> <span class="f">insert</span>(self, key, value):
+        idx = self._hash(key)
+        <span class="k">for</span> i, (k, v) <span class="k">in</span> <span class="b">enumerate</span>(self.table[idx]):
+            <span class="k">if</span> k == key:
+                self.table[idx][i] = (key, value)   <span class="c"># Update existing</span>
+                <span class="k">return</span>
+        self.table[idx].append((key, value))         <span class="c"># Append new</span>
+        self.count += <span class="n">1</span>
+
+    <span class="k">def</span> <span class="f">search</span>(self, key):
+        idx = self._hash(key)
+        <span class="k">for</span> k, v <span class="k">in</span> self.table[idx]:
+            <span class="k">if</span> k == key:
+                <span class="k">return</span> v
+        <span class="k">return</span> <span class="k">None</span>
+
+    <span class="k">def</span> <span class="f">delete</span>(self, key):
+        idx = self._hash(key)
+        <span class="k">for</span> i, (k, v) <span class="k">in</span> <span class="b">enumerate</span>(self.table[idx]):
+            <span class="k">if</span> k == key:
+                self.table[idx].pop(i)
+                self.count -= <span class="n">1</span>
+                <span class="k">return</span> <span class="k">True</span>
+        <span class="k">return</span> <span class="k">False</span>
+
+    <span class="k">def</span> <span class="f">load_factor</span>(self):
+        <span class="s">"""α = n/m.  Above 0.75 → time to resize!"""</span>
+        <span class="k">return</span> self.count / self.size</pre>
+</div>
+
+<h3>Strategy 2 — Open addressing</h3>
+<p>No linked lists. All keys live <strong>inside the array</strong>. On collision, <strong>probe</strong> for the next empty slot using a formula. There are three probing methods — each with different trade-offs.</p>
+</section>
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHAPTER 5 — PROBING FORMULAS            -->
+<!-- ════════════════════════════════════════ -->
+<section id="c5">
+<div class="ct">Chapter 05</div>
+<h2>Probing formulas (detailed)</h2>
+<p>In open addressing, the probe sequence <span class="ic">h(k, 0), h(k, 1), h(k, 2), …</span> determines where to look when the initial slot is taken. The probe number <strong>i</strong> starts at 0 and increments until an empty slot is found.</p>
+
+<div class="prg">
+  <div class="prc">
+    <div class="prn" style="color:var(--ac)">Linear probing</div>
+    <div class="prf" style="color:var(--ac)">h(k, i) = (h(k) + i) mod m</div>
+    <div class="prd">Steps: <strong>+1, +2, +3, …</strong><br>Cache-friendly (sequential memory access).<br>Causes <strong>primary clustering</strong>.</div>
+  </div>
+  <div class="prc">
+    <div class="prn" style="color:var(--pu)">Quadratic probing</div>
+    <div class="prf" style="color:var(--pu)">h(k, i) = (h(k) + c₁i + c₂i²) mod m</div>
+    <div class="prd">Steps: <strong>+1, +4, +9, +16, …</strong><br>Reduces primary clustering.<br>Causes <strong>secondary clustering</strong>. Requires m = prime.</div>
+  </div>
+  <div class="prc">
+    <div class="prn" style="color:var(--co)">Double hashing</div>
+    <div class="prf" style="color:var(--co)">h(k, i) = (h₁(k) + i × h₂(k)) mod m</div>
+    <div class="prd">Step size from <strong>2nd hash function</strong>.<br>Each key has unique probe sequence.<br><strong>No clustering at all.</strong></div>
+  </div>
+</div>
+
+<h4>Linear probing — step by step</h4>
+<div class="fc">
+  <div class="ft">Linear probing formula</div>
+  <div class="ff">h(k, i) = ( h(k) + i ) mod m</div>
+  <div class="fn"><strong>k</strong> = key, <strong>i</strong> = probe number (0, 1, 2, …), <strong>m</strong> = table size.<br>
+  Probe sequence: <strong>h(k)</strong>, <strong>h(k)+1</strong>, <strong>h(k)+2</strong>, … all mod m (wraps around).<br>
+  Example: h("apple")=3, m=7 → try slots 3, 4, 5, 6, 0, 1, 2.</div>
+</div>
+
+<p>Try the interactive demo below — click buttons and watch the probing formula in action. The log shows every <span class="ic">h(k, i)</span> computation.</p>
+
+<div class="wc">
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="wb" onclick="pi('apple',1.5)">Insert "apple"</button>
+    <button class="wb" onclick="pi('grape',2.0)">Insert "grape"</button>
+    <button class="wb" onclick="pi('banana',0.75)">Insert "banana"</button>
+    <button class="wb" onclick="pi('mango',2.5)">Insert "mango"</button>
+    <button class="wb" onclick="pi('kiwi',1.8)">Insert "kiwi"</button>
+    <button class="wb rs" onclick="rt()">Reset</button>
+  </div>
+  <div style="display:flex;gap:0" id="li"></div>
+  <div style="display:flex;gap:0" id="lg"></div>
+  <div id="ll" class="ll">Click a button to insert a key and watch linear probing:<br><span style="color:var(--ac)">h(k, i) = (h(k) + i) mod 7</span><br></div>
+</div>
+
+<div class="cb"><div class="chd"><span class="lg">python — linear probing (full)</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">class</span> <span class="f">LinearProbingHT</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, m=<span class="n">7</span>):
+        self.m = m
+        self.keys = [<span class="k">None</span>] * m
+        self.vals = [<span class="k">None</span>] * m
+
+    <span class="k">def</span> <span class="f">_probe</span>(self, key, i):
+        <span class="s">"""h(k, i) = (h(k) + i) mod m"""</span>
+        <span class="k">return</span> (<span class="b">hash</span>(key) % self.m + i) % self.m
+
+    <span class="k">def</span> <span class="f">insert</span>(self, key, val):
+        <span class="k">for</span> i <span class="k">in</span> <span class="b">range</span>(self.m):                <span class="c"># Try up to m probes</span>
+            idx = self._probe(key, i)           <span class="c"># Apply formula</span>
+            <span class="k">if</span> self.keys[idx] <span class="k">is</span> <span class="k">None</span> <span class="k">or</span> self.keys[idx] == key:
+                self.keys[idx] = key
+                self.vals[idx] = val
+                <span class="k">return</span>
+        <span class="k">raise</span> <span class="b">Exception</span>(<span class="s">"Table full!"</span>)
+
+    <span class="k">def</span> <span class="f">search</span>(self, key):
+        <span class="k">for</span> i <span class="k">in</span> <span class="b">range</span>(self.m):
+            idx = self._probe(key, i)
+            <span class="k">if</span> self.keys[idx] <span class="k">is</span> <span class="k">None</span>:
+                <span class="k">return</span> <span class="k">None</span>                      <span class="c"># Hit empty slot → not found</span>
+            <span class="k">if</span> self.keys[idx] == key:
+                <span class="k">return</span> self.vals[idx]
+        <span class="k">return</span> <span class="k">None</span></pre>
+</div>
+
+<h4>Quadratic probing — step by step</h4>
+<div class="fc">
+  <div class="ft">Quadratic probing formula</div>
+  <div class="ff">h(k, i) = ( h(k) + c₁×i + c₂×i² ) mod m</div>
+  <div class="fn">Common choice: <strong>c₁ = 0, c₂ = 1</strong>, simplifying to <strong>h(k, i) = (h(k) + i²) mod m</strong>.<br>
+  Probe sequence: h(k), h(k)+1, h(k)+4, h(k)+9, h(k)+16, …<br>
+  <strong>m must be prime</strong> — otherwise not all slots are visited!<br>
+  When m is prime and table is &lt; half full, insertion is guaranteed.</div>
+</div>
+<div class="cb"><div class="chd"><span class="lg">python — quadratic probing</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">class</span> <span class="f">QuadraticProbingHT</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, m=<span class="n">7</span>):          <span class="c"># m must be prime!</span>
+        self.m = m
+        self.keys = [<span class="k">None</span>] * m
+        self.vals = [<span class="k">None</span>] * m
+
+    <span class="k">def</span> <span class="f">_probe</span>(self, key, i):
+        <span class="s">"""h(k, i) = (h(k) + i²) mod m"""</span>
+        <span class="k">return</span> (<span class="b">hash</span>(key) % self.m + i * i) % self.m
+
+    <span class="k">def</span> <span class="f">insert</span>(self, key, val):
+        <span class="k">for</span> i <span class="k">in</span> <span class="b">range</span>(self.m):
+            idx = self._probe(key, i)
+            <span class="k">if</span> self.keys[idx] <span class="k">is</span> <span class="k">None</span> <span class="k">or</span> self.keys[idx] == key:
+                self.keys[idx] = key
+                self.vals[idx] = val
+                <span class="k">return</span>
+
+<span class="c"># Probe sequence for h(k)=3, m=7:</span>
+<span class="c"># i=0: (3+0) % 7 = 3</span>
+<span class="c"># i=1: (3+1) % 7 = 4</span>
+<span class="c"># i=2: (3+4) % 7 = 0</span>
+<span class="c"># i=3: (3+9) % 7 = 5</span></pre>
+</div>
+
+<h4>Double hashing — step by step</h4>
+<div class="fc">
+  <div class="ft">Double hashing formula</div>
+  <div class="ff">h(k, i) = ( h₁(k) + i × h₂(k) ) mod m</div>
+  <div class="fn">Two hash functions:<br>
+  <strong>h₁(k) = k mod m</strong> — determines starting slot<br>
+  <strong>h₂(k) = 1 + (k mod (m − 1))</strong> — determines step size<br>
+  The <strong>+1</strong> ensures h₂ is never 0 (otherwise we'd loop forever on the starting slot).<br>
+  Each key gets a <strong>unique step size</strong> → unique probe sequence → <strong>no clustering at all</strong>.</div>
+</div>
+<div class="cb"><div class="chd"><span class="lg">python — double hashing</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">class</span> <span class="f">DoubleHashHT</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, m=<span class="n">7</span>):
+        self.m = m
+        self.keys = [<span class="k">None</span>] * m
+        self.vals = [<span class="k">None</span>] * m
+
+    <span class="k">def</span> <span class="f">_h1</span>(self, key):
+        <span class="s">"""Primary hash — starting position."""</span>
+        <span class="k">return</span> <span class="b">hash</span>(key) % self.m
+
+    <span class="k">def</span> <span class="f">_h2</span>(self, key):
+        <span class="s">"""Secondary hash — step size. Never returns 0!"""</span>
+        <span class="k">return</span> <span class="n">1</span> + (<span class="b">hash</span>(key) % (self.m - <span class="n">1</span>))
+
+    <span class="k">def</span> <span class="f">_probe</span>(self, key, i):
+        <span class="s">"""h(k,i) = (h1(k) + i * h2(k)) mod m"""</span>
+        <span class="k">return</span> (self._h1(key) + i * self._h2(key)) % self.m
+
+    <span class="k">def</span> <span class="f">insert</span>(self, key, val):
+        <span class="k">for</span> i <span class="k">in</span> <span class="b">range</span>(self.m):
+            idx = self._probe(key, i)
+            <span class="k">if</span> self.keys[idx] <span class="k">is</span> <span class="k">None</span> <span class="k">or</span> self.keys[idx] == key:
+                self.keys[idx] = key
+                self.vals[idx] = val
+                <span class="k">return</span>
+
+<span class="c"># Example: key with h1=3, h2=2, m=7</span>
+<span class="c"># i=0: (3 + 0×2) % 7 = 3</span>
+<span class="c"># i=1: (3 + 1×2) % 7 = 5</span>
+<span class="c"># i=2: (3 + 2×2) % 7 = 0</span>
+<span class="c"># i=3: (3 + 3×2) % 7 = 2  ← different from linear!</span></pre>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHAPTER 6 — CLUSTERING PROBLEM          -->
+<!-- ════════════════════════════════════════ -->
+<section id="c6">
+<div class="ct">Chapter 06</div>
+<h2>The clustering problem</h2>
+
+<div class="co coc"><p><strong>Primary clustering (linear probing):</strong> Contiguous occupied blocks attract more keys. A block of size k has probability (k+1)/m of growing on the next insert. Clusters snowball — bigger clusters grow faster. Average probes degrade from O(1) toward O(n).</p></div>
+
+<div class="co cop"><p><strong>Secondary clustering (quadratic probing):</strong> Keys that hash to the same initial slot follow the <em>exact same probe sequence</em>. Less severe than primary clustering, but measurable when many keys share a slot.</p></div>
+
+<div class="co coa"><p><strong>Double hashing solves both:</strong> The second hash function gives each key a unique step size. Even keys starting at the same slot diverge immediately. This is the closest to "ideal" uniform probing.</p></div>
+
+<h3>Strategies comparison</h3>
+<table class="t2">
+<thead><tr><th>Strategy</th><th>Clustering</th><th>Cache perf.</th><th>Deletion</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>Separate chaining</td><td><span class="bf">None</span></td><td><span class="bs">Poor</span></td><td><span class="bf">Simple</span></td><td>Low</td></tr>
+<tr><td>Linear probing</td><td><span class="bs">Primary</span></td><td><span class="bf">Excellent</span></td><td><span class="bm">Tombstones</span></td><td>Low</td></tr>
+<tr><td>Quadratic probing</td><td><span class="bm">Secondary</span></td><td><span class="bm">Good</span></td><td><span class="bm">Tombstones</span></td><td>Medium</td></tr>
+<tr><td>Double hashing</td><td><span class="bf">None</span></td><td><span class="bs">Poor</span></td><td><span class="bm">Tombstones</span></td><td>High</td></tr>
+</tbody></table>
+
+<h3>Tombstone deletion in open addressing</h3>
+<p>You can't just set a deleted slot to <span class="ic">None</span> — it would break the probe chain! Subsequent searches would stop too early and miss keys that were placed past the deleted slot.</p>
+
+<div class="co com"><p><strong>Solution: Tombstones.</strong> Mark deleted slots with a sentinel value (e.g., <span class="ic">DELETED</span>). During <strong>search</strong>: skip past tombstones (keep probing). During <strong>insert</strong>: overwrite tombstones. Over time, tombstones accumulate → periodic rehashing cleans them up.</p></div>
+
+<div class="cb"><div class="chd"><span class="lg">python — tombstone deletion</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre>DELETED = <span class="s">"__TOMBSTONE__"</span>
+
+<span class="k">class</span> <span class="f">OpenAddressHT</span>:
+    <span class="k">def</span> <span class="f">delete</span>(self, key):
+        <span class="k">for</span> i <span class="k">in</span> <span class="b">range</span>(self.m):
+            idx = self._probe(key, i)
+            <span class="k">if</span> self.keys[idx] <span class="k">is</span> <span class="k">None</span>:
+                <span class="k">return</span> <span class="k">False</span>            <span class="c"># Key not found</span>
+            <span class="k">if</span> self.keys[idx] == key:
+                self.keys[idx] = DELETED  <span class="c"># Don't use None!</span>
+                self.vals[idx] = <span class="k">None</span>
+                <span class="k">return</span> <span class="k">True</span>
+        <span class="k">return</span> <span class="k">False</span>
+
+    <span class="k">def</span> <span class="f">search</span>(self, key):
+        <span class="k">for</span> i <span class="k">in</span> <span class="b">range</span>(self.m):
+            idx = self._probe(key, i)
+            <span class="k">if</span> self.keys[idx] <span class="k">is</span> <span class="k">None</span>:
+                <span class="k">return</span> <span class="k">None</span>             <span class="c"># Empty slot → stop</span>
+            <span class="k">if</span> self.keys[idx] == DELETED:
+                <span class="k">continue</span>                <span class="c"># Tombstone → keep probing</span>
+            <span class="k">if</span> self.keys[idx] == key:
+                <span class="k">return</span> self.vals[idx]</pre>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHAPTER 7 — LOAD FACTOR & RESIZING      -->
+<!-- ════════════════════════════════════════ -->
+<section id="c7">
+<div class="ct">Chapter 07</div>
+<h2>Load factor &amp; dynamic resizing</h2>
+
+<div class="fc">
+  <div class="ft">Load factor formula</div>
+  <div class="ff">α = n / m</div>
+  <div class="fn"><strong>n</strong> = number of stored elements, <strong>m</strong> = number of slots.<br>Higher α → more collisions → slower operations. Keep α below a threshold.</div>
+</div>
+
+<h3>Thresholds &amp; expected probe counts</h3>
+<table class="t2">
+<thead><tr><th>Strategy</th><th>Max α</th><th>Probes (successful)</th><th>Probes (unsuccessful)</th></tr></thead>
+<tbody>
+<tr><td>Chaining</td><td><span class="bf">1.0+</span></td><td>1 + α/2</td><td>α</td></tr>
+<tr><td>Linear probing</td><td><span class="bm">0.5 – 0.7</span></td><td>½(1 + 1/(1−α))</td><td>½(1 + (1/(1−α))²)</td></tr>
+<tr><td>Quadratic probing</td><td><span class="bm">0.5</span></td><td>−ln(1−α) / α</td><td>1 / (1−α)</td></tr>
+<tr><td>Double hashing</td><td><span class="bm">0.5 – 0.7</span></td><td>−ln(1−α) / α</td><td>1 / (1−α)</td></tr>
+</tbody></table>
+
+<div class="co cob"><p><strong>At α=0.5</strong> linear probing averages 1.5 probes per lookup. At <strong>α=0.9</strong> it averages 5.5. At <strong>α=0.99</strong> it's 50. This is why resizing is critical!</p></div>
+
+<h3>Rehashing (dynamic resizing)</h3>
+<div class="fc">
+  <div class="ft">Rehashing formula</div>
+  <div class="ff">m<sub>new</sub> = next_prime( 2 × m<sub>old</sub> )</div>
+  <div class="fn">Steps: (1) Allocate new table of size m_new. (2) Recompute h(key) % m_new for every key. (3) Re-insert all keys. (4) Replace old table.<br>
+  Cost: <strong>O(n)</strong> per resize. But resizes are rare enough that <strong>amortized cost is O(1)</strong> per insert.<br>
+  Python's dict resizes at <strong>α = 2/3</strong>. Table size is always a power of 2.</div>
+</div>
+
+<div class="cb"><div class="chd"><span class="lg">python — hash table with automatic resizing</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">class</span> <span class="f">DynamicHashTable</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, m=<span class="n">7</span>):
+        self.m = m
+        self.table = [[] <span class="k">for</span> _ <span class="k">in</span> <span class="b">range</span>(m)]
+        self.n = <span class="n">0</span>
+
+    <span class="k">def</span> <span class="f">_resize</span>(self):
+        <span class="s">"""Double size + 1 (stays odd → closer to prime)."""</span>
+        old = self.table
+        self.m = self.m * <span class="n">2</span> + <span class="n">1</span>
+        self.table = [[] <span class="k">for</span> _ <span class="k">in</span> <span class="b">range</span>(self.m)]
+        self.n = <span class="n">0</span>
+        <span class="k">for</span> bucket <span class="k">in</span> old:
+            <span class="k">for</span> k, v <span class="k">in</span> bucket:
+                self.insert(k, v)           <span class="c"># Re-hash with new m</span>
+
+    <span class="k">def</span> <span class="f">insert</span>(self, key, val):
+        <span class="k">if</span> self.n / self.m >= <span class="n">0.75</span>:       <span class="c"># α threshold → resize!</span>
+            self._resize()
+        idx = <span class="b">hash</span>(key) % self.m
+        <span class="k">for</span> i, (k, v) <span class="k">in</span> <span class="b">enumerate</span>(self.table[idx]):
+            <span class="k">if</span> k == key:
+                self.table[idx][i] = (key, val)
+                <span class="k">return</span>
+        self.table[idx].append((key, val))
+        self.n += <span class="n">1</span>
+
+<span class="c"># The table automatically grows when it gets too full!</span>
+ht = DynamicHashTable()
+<span class="k">for</span> i <span class="k">in</span> <span class="b">range</span>(<span class="n">100</span>):
+    ht.insert(<span class="s">f"key_{i}"</span>, i)
+<span class="b">print</span>(<span class="s">f"Size: {ht.m}, Items: {ht.n}, α: {ht.n/ht.m:.2f}"</span>)</pre>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHAPTER 8 — PYTHON DICT & SET           -->
+<!-- ════════════════════════════════════════ -->
+<section id="c8">
+<div class="ct">Chapter 08</div>
+<h2>Python dict &amp; set internals</h2>
+<p>Both <span class="ic">dict</span> and <span class="ic">set</span> are hash tables. Understanding CPython's specific implementation helps you reason about performance.</p>
+
+<div class="fc">
+  <div class="ft">CPython dict probe formula (perturbation-based)</div>
+  <div class="ff">j = ((5 × j) + 1 + perturb) mod 2<sup>n</sup><br>perturb >>= 5&nbsp;&nbsp;&nbsp;<span style="font-size:13px;color:var(--td)">(shift right 5 bits each step)</span></div>
+  <div class="fn">Table size is always <strong>2<sup>n</sup></strong> (power of 2). The <strong>perturb</strong> variable starts as the full hash value and gets right-shifted by 5 each probe. Initially it jumps widely across the table (using high-order hash bits); as perturb decays toward 0, it becomes linear. This gives excellent distribution without needing double hashing. Load threshold: <strong>α = 2/3</strong>. Preserves insertion order since Python 3.7+.</div>
+</div>
+
+<div class="dc">
+<div class="dl">dict vs set internals</div>
+<svg width="100%" viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg">
+<rect x="25" y="20" width="300" height="220" rx="14" fill="rgba(110,235,192,.04)" stroke="#4CC9A0" stroke-width=".5"/>
+<text x="175" y="48" text-anchor="middle" fill="#6EEBC0" font-size="15" font-weight="500">dict — key:value pairs</text>
+<rect x="45" y="66" width="260" height="28" rx="4" fill="rgba(110,235,192,.08)" stroke="#4CC9A0" stroke-width=".5"/>
+<text x="175" y="85" text-anchor="middle" fill="#6EEBC0" font-size="12">hash | key | value</text>
+<rect x="45" y="98" width="260" height="24" rx="4" fill="var(--bg4)" stroke="var(--bd)" stroke-width=".5"/><text x="175" y="114" text-anchor="middle" fill="#8B90A0" font-size="12">8372.. | "name" | "Alice"</text>
+<rect x="45" y="126" width="260" height="24" rx="4" fill="var(--bg4)" stroke="var(--bd)" stroke-width=".5"/><text x="175" y="142" text-anchor="middle" fill="#8B90A0" font-size="12">2941.. | "age" | 30</text>
+<rect x="45" y="154" width="260" height="24" rx="4" fill="var(--bg4)" stroke="var(--bd)" stroke-width=".5"/><text x="175" y="170" text-anchor="middle" fill="#8B90A0" font-size="12">5610.. | "city" | "NYC"</text>
+<text x="175" y="204" text-anchor="middle" fill="#5A5F72" font-size="12">Open addressing (perturbation)</text>
+<text x="175" y="222" text-anchor="middle" fill="#5A5F72" font-size="12">Resizes at α=2/3. Insertion order.</text>
+
+<rect x="355" y="20" width="300" height="220" rx="14" fill="rgba(180,160,255,.04)" stroke="#B4A0FF" stroke-width=".5"/>
+<text x="505" y="48" text-anchor="middle" fill="#B4A0FF" font-size="15" font-weight="500">set — keys only</text>
+<rect x="375" y="66" width="260" height="28" rx="4" fill="rgba(180,160,255,.08)" stroke="#B4A0FF" stroke-width=".5"/>
+<text x="505" y="85" text-anchor="middle" fill="#B4A0FF" font-size="12">hash | key</text>
+<rect x="375" y="98" width="260" height="24" rx="4" fill="var(--bg4)" stroke="var(--bd)" stroke-width=".5"/><text x="505" y="114" text-anchor="middle" fill="#8B90A0" font-size="12">8372.. | "apple"</text>
+<rect x="375" y="126" width="260" height="24" rx="4" fill="var(--bg4)" stroke="var(--bd)" stroke-width=".5"/><text x="505" y="142" text-anchor="middle" fill="#8B90A0" font-size="12">2941.. | "banana"</text>
+<rect x="375" y="154" width="260" height="24" rx="4" fill="var(--bg4)" stroke="var(--bd)" stroke-width=".5"/><text x="505" y="170" text-anchor="middle" fill="#8B90A0" font-size="12">5610.. | "cherry"</text>
+<text x="505" y="204" text-anchor="middle" fill="#5A5F72" font-size="12">No duplicates. O(1) membership.</text>
+<text x="505" y="222" text-anchor="middle" fill="#5A5F72" font-size="12">Set ops: &amp; (AND) | (OR) - ^ (XOR)</text>
+</svg>
+</div>
+
+<div class="cb"><div class="chd"><span class="lg">python — dict &amp; set complete cheat sheet</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="c"># ══════════ DICT — all O(1) average ══════════</span>
+d = {<span class="s">"a"</span>: <span class="n">1</span>, <span class="s">"b"</span>: <span class="n">2</span>, <span class="s">"c"</span>: <span class="n">3</span>}
+d[<span class="s">"d"</span>] = <span class="n">4</span>                       <span class="c"># Insert / Update    → O(1)</span>
+val = d[<span class="s">"a"</span>]                     <span class="c"># Access             → O(1)</span>
+val = d.get(<span class="s">"z"</span>, <span class="n">0</span>)             <span class="c"># Safe access         → O(1)</span>
+<span class="k">del</span> d[<span class="s">"b"</span>]                       <span class="c"># Delete             → O(1)</span>
+<span class="s">"a"</span> <span class="k">in</span> d                         <span class="c"># Membership check   → O(1) ← SUPERPOWER</span>
+d.setdefault(<span class="s">"e"</span>, <span class="n">5</span>)            <span class="c"># Insert only if missing</span>
+d.pop(<span class="s">"a"</span>, <span class="k">None</span>)                <span class="c"># Remove and return</span>
+
+<span class="k">from</span> collections <span class="k">import</span> Counter, defaultdict
+Counter(<span class="s">"abracadabra"</span>)           <span class="c"># {'a':5, 'b':2, 'r':2, ...}</span>
+graph = defaultdict(<span class="b">list</span>)
+graph[<span class="s">"A"</span>].append(<span class="s">"B"</span>)           <span class="c"># No KeyError</span>
+
+<span class="c"># ══════════ SET — O(1) element ops ══════════</span>
+s = {<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>, <span class="n">4</span>, <span class="n">5</span>}
+s.add(<span class="n">6</span>)                         <span class="c"># Add       → O(1)</span>
+s.discard(<span class="n">99</span>)                    <span class="c"># Remove    → O(1), no error</span>
+<span class="n">3</span> <span class="k">in</span> s                            <span class="c"># Membership → O(1)</span>
+
+a, b = {<span class="n">1</span>,<span class="n">2</span>,<span class="n">3</span>,<span class="n">4</span>}, {<span class="n">3</span>,<span class="n">4</span>,<span class="n">5</span>,<span class="n">6</span>}
+a & b   <span class="c"># Intersection  → {3, 4}</span>
+a | b   <span class="c"># Union          → {1, 2, 3, 4, 5, 6}</span>
+a - b   <span class="c"># Difference     → {1, 2}</span>
+a ^ b   <span class="c"># Symmetric diff → {1, 2, 5, 6}</span></pre>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHAPTER 9 — TIME COMPLEXITY             -->
+<!-- ════════════════════════════════════════ -->
+<section id="c9">
+<div class="ct">Chapter 09</div>
+<h2>Time complexity</h2>
+<table class="t2">
+<thead><tr><th>Data structure</th><th>Search</th><th>Insert</th><th>Delete</th><th>Space</th></tr></thead>
+<tbody>
+<tr><td>Unsorted array / list</td><td><span class="bs">O(n)</span></td><td><span class="bf">O(1)</span></td><td><span class="bs">O(n)</span></td><td>O(n)</td></tr>
+<tr><td>Sorted array</td><td><span class="bm">O(log n)</span></td><td><span class="bs">O(n)</span></td><td><span class="bs">O(n)</span></td><td>O(n)</td></tr>
+<tr><td>Balanced BST</td><td><span class="bm">O(log n)</span></td><td><span class="bm">O(log n)</span></td><td><span class="bm">O(log n)</span></td><td>O(n)</td></tr>
+<tr class="hr"><td>Hash table (dict/set)</td><td><span class="bf">O(1)*</span></td><td><span class="bf">O(1)*</span></td><td><span class="bf">O(1)*</span></td><td>O(n)</td></tr>
+</tbody></table>
+<p style="font-size:13px;color:var(--td)">* Average case. Worst case is O(n) when all keys collide into one bucket.</p>
+<div class="co coa"><p>The trade-off: hash tables use ~2–3× the memory of their contents (extra space for empty slots and load factor headroom) in exchange for blazing-fast O(1) lookups.</p></div>
+</section>
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHAPTER 10 — DSA PATTERNS               -->
+<!-- ════════════════════════════════════════ -->
+<section id="c10">
+<div class="ct">Chapter 10</div>
+<h2>Essential DSA patterns</h2>
+
+<div class="pg">
+  <div class="pc"><div class="pn">01</div><div class="pt">Frequency counting</div><div class="pd">Count occurrences, find most/least common</div></div>
+  <div class="pc"><div class="pn">02</div><div class="pt">Two Sum / complement</div><div class="pd">Store seen values, check complement in O(1)</div></div>
+  <div class="pc"><div class="pn">03</div><div class="pt">Sliding window + map</div><div class="pd">Track character/element counts in a window</div></div>
+  <div class="pc"><div class="pn">04</div><div class="pt">Group by computed key</div><div class="pd">Bucket items by sorted chars, counts, etc.</div></div>
+  <div class="pc"><div class="pn">05</div><div class="pt">Prefix sum + map</div><div class="pd">Find subarrays with target sum</div></div>
+  <div class="pc"><div class="pn">06</div><div class="pt">Set for existence</div><div class="pd">Convert list → set for O(1) membership</div></div>
+</div>
+
+<h3>Pattern 1 — Frequency counting</h3>
+<div class="cb"><div class="chd"><span class="lg">python</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">def</span> <span class="f">first_unique_char</span>(s: <span class="b">str</span>) -> <span class="b">int</span>:
+    freq = {}
+    <span class="k">for</span> ch <span class="k">in</span> s:
+        freq[ch] = freq.get(ch, <span class="n">0</span>) + <span class="n">1</span>
+    <span class="k">for</span> i, ch <span class="k">in</span> <span class="b">enumerate</span>(s):
+        <span class="k">if</span> freq[ch] == <span class="n">1</span>:
+            <span class="k">return</span> i
+    <span class="k">return</span> -<span class="n">1</span>
+
+<span class="b">print</span>(first_unique_char(<span class="s">"leetcode"</span>))   <span class="c"># 0 (→ 'l')</span>
+
+<span class="c"># Anagram check — even shorter with Counter:</span>
+<span class="k">from</span> collections <span class="k">import</span> Counter
+<span class="k">def</span> <span class="f">is_anagram</span>(s, t):
+    <span class="k">return</span> Counter(s) == Counter(t)</pre>
+</div>
+
+<h3>Pattern 2 — Two Sum</h3>
+<div class="cb"><div class="chd"><span class="lg">python</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">def</span> <span class="f">two_sum</span>(nums: <span class="b">list</span>, target: <span class="b">int</span>) -> <span class="b">list</span>:
+    seen = {}   <span class="c"># value → index</span>
+    <span class="k">for</span> i, num <span class="k">in</span> <span class="b">enumerate</span>(nums):
+        complement = target - num
+        <span class="k">if</span> complement <span class="k">in</span> seen:         <span class="c"># O(1) lookup!</span>
+            <span class="k">return</span> [seen[complement], i]
+        seen[num] = i                  <span class="c"># Store for future</span>
+    <span class="k">return</span> []
+
+<span class="b">print</span>(two_sum([<span class="n">2</span>, <span class="n">7</span>, <span class="n">11</span>, <span class="n">15</span>], <span class="n">9</span>))  <span class="c"># [0, 1]</span></pre>
+</div>
+<div style="margin:1rem 0">
+  <div class="ws"><span class="wh">i=0, num=2</span> → complement = 9−2 = 7 → <span style="color:var(--td)">7 not in {}</span> → seen = {2: 0}</div>
+  <div class="ws"><span class="wh">i=1, num=7</span> → complement = 9−7 = 2 → <span class="wf">2 IS in {2:0}</span> → return [0, 1]</div>
+</div>
+
+<h3>Pattern 3 — Sliding window + hash map</h3>
+<div class="cb"><div class="chd"><span class="lg">python — longest substring without repeating chars</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">def</span> <span class="f">length_of_longest_substring</span>(s: <span class="b">str</span>) -> <span class="b">int</span>:
+    char_index = {}      <span class="c"># char → last seen index</span>
+    left = <span class="n">0</span>
+    max_len = <span class="n">0</span>
+    <span class="k">for</span> right, ch <span class="k">in</span> <span class="b">enumerate</span>(s):
+        <span class="k">if</span> ch <span class="k">in</span> char_index <span class="k">and</span> char_index[ch] >= left:
+            left = char_index[ch] + <span class="n">1</span>    <span class="c"># Shrink window</span>
+        char_index[ch] = right
+        max_len = <span class="b">max</span>(max_len, right - left + <span class="n">1</span>)
+    <span class="k">return</span> max_len
+
+<span class="b">print</span>(length_of_longest_substring(<span class="s">"abcabcbb"</span>))   <span class="c"># 3 ("abc")</span></pre>
+</div>
+
+<h3>Pattern 4 — Grouping / bucketing</h3>
+<div class="cb"><div class="chd"><span class="lg">python — group anagrams</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">from</span> collections <span class="k">import</span> defaultdict
+
+<span class="k">def</span> <span class="f">group_anagrams</span>(strs: <span class="b">list</span>) -> <span class="b">list</span>:
+    groups = defaultdict(<span class="b">list</span>)
+    <span class="k">for</span> s <span class="k">in</span> strs:
+        key = <span class="b">tuple</span>(<span class="b">sorted</span>(s))      <span class="c"># Sorted chars as hashable key</span>
+        groups[key].append(s)
+    <span class="k">return</span> <span class="b">list</span>(groups.values())
+
+<span class="b">print</span>(group_anagrams([<span class="s">"eat"</span>,<span class="s">"tea"</span>,<span class="s">"tan"</span>,<span class="s">"ate"</span>,<span class="s">"nat"</span>,<span class="s">"bat"</span>]))
+<span class="c"># [['eat','tea','ate'], ['tan','nat'], ['bat']]</span></pre>
+</div>
+
+<h3>Pattern 5 — Prefix sum + hash map</h3>
+<div class="cb"><div class="chd"><span class="lg">python — subarray sum equals K</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">def</span> <span class="f">subarray_sum</span>(nums: <span class="b">list</span>, k: <span class="b">int</span>) -> <span class="b">int</span>:
+    prefix_count = {<span class="n">0</span>: <span class="n">1</span>}    <span class="c"># prefix_sum → count seen</span>
+    current_sum = <span class="n">0</span>
+    result = <span class="n">0</span>
+    <span class="k">for</span> num <span class="k">in</span> nums:
+        current_sum += num
+        <span class="k">if</span> current_sum - k <span class="k">in</span> prefix_count:
+            result += prefix_count[current_sum - k]
+        prefix_count[current_sum] = prefix_count.get(current_sum, <span class="n">0</span>) + <span class="n">1</span>
+    <span class="k">return</span> result
+
+<span class="b">print</span>(subarray_sum([<span class="n">1</span>, <span class="n">1</span>, <span class="n">1</span>], <span class="n">2</span>))   <span class="c"># 2</span></pre>
+</div>
+
+<h3>Pattern 6 — Set for O(1) existence checks</h3>
+<div class="cb"><div class="chd"><span class="lg">python — longest consecutive sequence</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">def</span> <span class="f">longest_consecutive</span>(nums: <span class="b">list</span>) -> <span class="b">int</span>:
+    num_set = <span class="b">set</span>(nums)
+    max_streak = <span class="n">0</span>
+    <span class="k">for</span> num <span class="k">in</span> num_set:
+        <span class="k">if</span> num - <span class="n">1</span> <span class="k">not in</span> num_set:    <span class="c"># Start of a sequence</span>
+            current, streak = num, <span class="n">1</span>
+            <span class="k">while</span> current + <span class="n">1</span> <span class="k">in</span> num_set:
+                current += <span class="n">1</span>; streak += <span class="n">1</span>
+            max_streak = <span class="b">max</span>(max_streak, streak)
+    <span class="k">return</span> max_streak
+
+<span class="b">print</span>(longest_consecutive([<span class="n">100</span>,<span class="n">4</span>,<span class="n">200</span>,<span class="n">1</span>,<span class="n">3</span>,<span class="n">2</span>]))  <span class="c"># 4 (1→2→3→4)</span>
+
+<span class="c"># Contains duplicate — one-liner:</span>
+<span class="k">def</span> <span class="f">contains_duplicate</span>(nums):
+    <span class="k">return</span> <span class="b">len</span>(nums) != <span class="b">len</span>(<span class="b">set</span>(nums))</pre>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHAPTER 11 — ADVANCED TECHNIQUES        -->
+<!-- ════════════════════════════════════════ -->
+<section id="c11">
+<div class="ct">Chapter 11</div>
+<h2>Advanced techniques</h2>
+
+<h3>Custom hashable objects</h3>
+<div class="cb"><div class="chd"><span class="lg">python — __hash__ and __eq__</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">class</span> <span class="f">Point</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, x, y):
+        self.x = x; self.y = y
+    <span class="k">def</span> <span class="f">__hash__</span>(self):
+        <span class="k">return</span> <span class="b">hash</span>((self.x, self.y))    <span class="c"># Delegate to tuple</span>
+    <span class="k">def</span> <span class="f">__eq__</span>(self, other):
+        <span class="k">return</span> <span class="b">isinstance</span>(other, Point) <span class="k">and</span> self.x==other.x <span class="k">and</span> self.y==other.y
+
+unique = {Point(<span class="n">1</span>,<span class="n">2</span>), Point(<span class="n">1</span>,<span class="n">2</span>), Point(<span class="n">3</span>,<span class="n">4</span>)}
+<span class="b">print</span>(<span class="b">len</span>(unique))   <span class="c"># 2 — duplicates removed!</span></pre>
+</div>
+
+<h3>frozenset for unordered cache keys</h3>
+<div class="cb"><div class="chd"><span class="lg">python</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre>cache = {}
+<span class="k">def</span> <span class="f">expensive</span>(items):
+    key = <span class="b">frozenset</span>(items)       <span class="c"># Order doesn't matter</span>
+    <span class="k">if</span> key <span class="k">in</span> cache: <span class="k">return</span> cache[key]
+    result = <span class="b">sum</span>(x**<span class="n">2</span> <span class="k">for</span> x <span class="k">in</span> items)
+    cache[key] = result
+    <span class="k">return</span> result
+
+expensive([<span class="n">3</span>,<span class="n">1</span>,<span class="n">2</span>])   <span class="c"># Computes</span>
+expensive([<span class="n">2</span>,<span class="n">3</span>,<span class="n">1</span>])   <span class="c"># Cache hit! Same frozenset</span></pre>
+</div>
+
+<h3>LRU Cache with OrderedDict</h3>
+<div class="cb"><div class="chd"><span class="lg">python — LRU cache (classic interview question)</span><button class="cpb" onclick="cc(this)">Copy</button></div>
+<pre><span class="k">from</span> collections <span class="k">import</span> OrderedDict
+
+<span class="k">class</span> <span class="f">LRUCache</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, capacity: <span class="b">int</span>):
+        self.cache = OrderedDict()
+        self.capacity = capacity
+
+    <span class="k">def</span> <span class="f">get</span>(self, key: <span class="b">int</span>) -> <span class="b">int</span>:
+        <span class="k">if</span> key <span class="k">not in</span> self.cache:
+            <span class="k">return</span> -<span class="n">1</span>
+        self.cache.move_to_end(key)       <span class="c"># Mark as recently used</span>
+        <span class="k">return</span> self.cache[key]
+
+    <span class="k">def</span> <span class="f">put</span>(self, key: <span class="b">int</span>, value: <span class="b">int</span>):
+        <span class="k">if</span> key <span class="k">in</span> self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        <span class="k">if</span> <span class="b">len</span>(self.cache) > self.capacity:
+            self.cache.popitem(last=<span class="k">False</span>)  <span class="c"># Evict LRU</span>
+
+lru = LRUCache(<span class="n">2</span>)
+lru.put(<span class="n">1</span>, <span class="n">1</span>); lru.put(<span class="n">2</span>, <span class="n">2</span>)
+<span class="b">print</span>(lru.get(<span class="n">1</span>))    <span class="c"># 1</span>
+lru.put(<span class="n">3</span>, <span class="n">3</span>)         <span class="c"># Evicts key 2</span>
+<span class="b">print</span>(lru.get(<span class="n">2</span>))    <span class="c"># -1 (evicted)</span></pre>
+</div>
+</section>
+
+<!-- ════════════════════════════════════════ -->
+<!-- CHAPTER 12 — WHEN NOT TO HASH           -->
+<!-- ════════════════════════════════════════ -->
+<section id="c12">
+<div class="ct">Chapter 12</div>
+<h2>When not to use hashing</h2>
+<div class="co com"><p><strong>Need sorted order?</strong> → Use a balanced BST or sorted array. Dict maintains <em>insertion</em> order, not sort order.</p></div>
+<div class="co cop"><p><strong>Range queries?</strong> ("find all keys between 5 and 10") → Hash tables can't do range queries. Use a tree or sorted structure.</p></div>
+<div class="co coc"><p><strong>Memory is extremely tight?</strong> → Hash tables use ~2–3× memory of their contents due to empty slots and load factor headroom.</p></div>
+<div class="co coa"><p><strong>Need worst-case O(log n)?</strong> → Hash tables can degrade to O(n) with adversarial inputs. Balanced trees give consistent O(log n) for every operation.</p></div>
+</section>
+
+<!-- ════════════════════════════════════════ -->
+<!-- REFERENCE                                -->
+<!-- ════════════════════════════════════════ -->
+<section id="ref">
+<div class="ct">Reference</div>
+<h2>All formulas &amp; decision map</h2>
+
+<h3>Decision map: problem → pattern</h3>
+<div class="dm">
+  <div class="dr"><span class="dq">"Do any two elements satisfy X?"</span><span class="da">→ Hash map (Two Sum)</span></div>
+  <div class="dr"><span class="dq">"Count/frequency of elements?"</span><span class="da">→ Counter / freq dict</span></div>
+  <div class="dr"><span class="dq">"Find duplicates?"</span><span class="da">→ Set</span></div>
+  <div class="dr"><span class="dq">"Group similar items?"</span><span class="da">→ defaultdict(list)</span></div>
+  <div class="dr"><span class="dq">"Subarray with sum/property K?"</span><span class="da">→ Prefix sum + hash map</span></div>
+  <div class="dr"><span class="dq">"Sliding window tracking?"</span><span class="da">→ Hash map as window state</span></div>
+  <div class="dr"><span class="dq">"Cache expensive computations?"</span><span class="da">→ Dict as memo table</span></div>
+  <div class="dr"><span class="dq">"Check membership fast?"</span><span class="da">→ Set (convert list → set)</span></div>
+  <div class="dr"><span class="dq">"Order + fast lookup?"</span><span class="da">→ OrderedDict / dict (3.7+)</span></div>
+</div>
+
+<h3>Hash function formulas</h3>
+<div class="fc">
+  <div class="ft">All hash function methods</div>
+  <div class="ff" style="font-size:14px;line-height:2.2">
+    Division:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h(k) = k mod m<br>
+    Multiplication:&nbsp;h(k) = ⌊m × (k×A mod 1)⌋<br>
+    Polynomial:&nbsp;&nbsp;&nbsp;&nbsp;h(s) = Σ s[i] × p^(n-1-i) mod m<br>
+    Universal:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h(k) = ((a×k + b) mod p) mod m
+  </div>
+</div>
+
+<h3>Probing formulas</h3>
+<div class="fc">
+  <div class="ft">All open addressing probe sequences</div>
+  <div class="ff" style="font-size:14px;line-height:2.2">
+    Linear:&nbsp;&nbsp;&nbsp;&nbsp;h(k, i) = (h(k) + i) mod m<br>
+    Quadratic:&nbsp;h(k, i) = (h(k) + c₁i + c₂i²) mod m<br>
+    Double:&nbsp;&nbsp;&nbsp;&nbsp;h(k, i) = (h₁(k) + i × h₂(k)) mod m<br>
+    CPython:&nbsp;&nbsp;&nbsp;j = ((5×j) + 1 + perturb) mod 2<sup>n</sup>; perturb >>= 5
+  </div>
+</div>
+
+<h3>Performance formulas</h3>
+<div class="fc">
+  <div class="ft">Load factor &amp; resizing</div>
+  <div class="ff" style="font-size:14px;line-height:2.2">
+    Load factor:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;α = n / m<br>
+    Resize trigger:&nbsp;&nbsp;&nbsp;&nbsp;α > threshold (0.5–0.75)<br>
+    New table size:&nbsp;&nbsp;&nbsp;&nbsp;m_new ≈ 2 × m_old (prime)<br>
+    Amortized insert:&nbsp;&nbsp;O(1) (resize is O(n) but rare)
+  </div>
+</div>
+</section>
+
+<div class="ftr">Hashing in Python — Zero to Hero · A complete visual DSA guide</div>
+</main>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script>
+// Scroll progress
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  document.getElementById('sp').style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100 + '%';
+});
+
+// Active nav
+const ss = document.querySelectorAll('section[id]');
+const ns = document.querySelectorAll('.nl');
+const o1 = new IntersectionObserver(e => {
+  e.forEach(x => {
+    if (x.isIntersecting) {
+      ns.forEach(l => l.classList.remove('active'));
+      const l = document.querySelector('.nl[href="#' + x.target.id + '"]');
+      if (l) l.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+ss.forEach(s => o1.observe(s));
+
+// Scroll reveal
+const o2 = new IntersectionObserver(e => {
+  e.forEach(x => { if (x.isIntersecting) x.target.classList.add('v'); });
+}, { threshold: 0.08 });
+ss.forEach(s => o2.observe(s));
+
+// Copy code
+function cc(b) {
+  const p = b.closest('.cb').querySelector('pre');
+  navigator.clipboard.writeText(p.innerText).then(() => {
+    b.textContent = 'Copied!';
+    setTimeout(() => b.textContent = 'Copy', 1500);
+  });
+}
+
+// ═══ Linear probing widget ═══
+const M = 7;
+let T = new Array(M).fill(null);
+const sh = k => ({ apple: 1, grape: 1, banana: 3, mango: 3, kiwi: 4 }[k] ??
+  Math.abs([...k].reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0)) % M);
+
+function rl(probeIdx, targetIdx) {
+  let ih = '', ch = '';
+  for (let i = 0; i < M; i++) {
+    ih += '<div class="li">' + i + '</div>';
+    let cls = i === targetIdx ? 'tg' : i === probeIdx ? 'pr' : T[i] ? 'fi' : '';
+    ch += '<div class="lc ' + cls + '">' + (T[i] ? T[i][0] : '\u2014') + '</div>';
+  }
+  document.getElementById('li').innerHTML = ih;
+  document.getElementById('lg').innerHTML = ch;
+}
+
+function ll(m) {
+  const e = document.getElementById('ll');
+  e.innerHTML += m + '<br>';
+  e.scrollTop = e.scrollHeight;
+}
+
+async function pi(key, val) {
+  let idx = sh(key), st = 0;
+  ll('<span style="color:var(--pu)">h("' + key + '", 0)</span> = (' + sh(key) + ' + 0) mod ' + M + ' = <b>' + idx + '</b>');
+  while (T[idx] !== null && T[idx][0] !== key) {
+    rl(idx, -1);
+    st++;
+    let next = (sh(key) + st) % M;
+    ll('&nbsp;&nbsp;Slot ' + idx + ' occupied → <span style="color:var(--am)">h("' + key + '", ' + st + ')</span> = (' + sh(key) + ' + ' + st + ') mod ' + M + ' = <b>' + next + '</b>');
+    await new Promise(r => setTimeout(r, 500));
+    idx = next;
+    if (st >= M) { ll('Table full!'); return; }
+  }
+  T[idx] = [key, val];
+  rl(-1, idx);
+  ll(st > 0
+    ? '&nbsp;&nbsp;<span style="color:var(--ac)">✓ Placed "' + key + '" at index ' + idx + ' after ' + st + ' probe(s)</span>'
+    : '&nbsp;&nbsp;<span style="color:var(--ac)">✓ Placed "' + key + '" at index ' + idx + ' (no collision)</span>');
+}
+
+function rt() {
+  T = new Array(M).fill(null);
+  rl(-1, -1);
+  document.getElementById('ll').innerHTML = 'Cleared. Try inserting keys again…<br><span style="color:var(--ac)">h(k, i) = (h(k) + i) mod 7</span><br>';
+}
+
+rl(-1, -1);
+</script>
+</body>
+</html>

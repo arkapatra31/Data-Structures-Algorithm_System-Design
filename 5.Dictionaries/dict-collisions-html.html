@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Dictionary &amp; Hash Collisions — Complete Guide</title>
+<style>
+:root{--bg:#ffffff;--bg2:#f7f7f5;--bg3:#eeeee9;--tx:#1a1a1a;--tx2:#555;--tx3:#888;--acc:#534AB7;--teal:#0F6E56;--amber:#BA7517;--coral:#D85A30;--red:#A32D2D;--blue:#185FA5;--green:#639922;--border:#ddd;--code-bg:#f4f4f0;--font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;--mono:"SF Mono","Fira Code","Cascadia Code",Consolas,monospace}
+@media(prefers-color-scheme:dark){:root{--bg:#1a1a1a;--bg2:#242424;--bg3:#2e2e2e;--tx:#e8e8e8;--tx2:#aaa;--tx3:#777;--border:#444;--code-bg:#2a2a28}}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--tx);line-height:1.75;max-width:860px;margin:0 auto;padding:2rem 1.5rem 4rem}
+h1{font-size:2rem;font-weight:600;margin:0 0 .5rem;letter-spacing:-.02em}
+h2{font-size:1.4rem;font-weight:600;margin:2.5rem 0 .75rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+h3{font-size:1.15rem;font-weight:600;margin:1.8rem 0 .5rem}
+p,li{margin:.5rem 0;color:var(--tx)}
+.subtitle{color:var(--tx2);font-size:1.05rem;margin-bottom:2rem}
+a{color:var(--acc)}
+strong{font-weight:600}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:2px 6px;border-radius:4px}
+pre{background:var(--code-bg);border-radius:8px;padding:1.25rem;overflow-x:auto;margin:1rem 0;line-height:1.6;font-size:.85rem}
+pre code{background:none;padding:0}
+.note{background:var(--bg2);border-left:3px solid var(--acc);padding:.85rem 1.1rem;border-radius:0 8px 8px 0;margin:1rem 0;font-size:.95rem}
+.warn{border-left-color:var(--amber)}
+.danger{border-left-color:var(--red)}
+ul,ol{padding-left:1.5rem}
+li{margin:.35rem 0}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem}
+th,td{text-align:left;padding:.55rem .75rem;border-bottom:1px solid var(--border)}
+th{font-weight:600;background:var(--bg2)}
+.diagram-card{background:var(--bg2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;overflow-x:auto}
+.diagram-card svg{display:block;margin:0 auto}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;padding:2px 10px;border-radius:12px;margin-right:6px}
+.tag-teal{background:#E1F5EE;color:#0F6E56}
+.tag-purple{background:#EEEDFE;color:#534AB7}
+.tag-amber{background:#FAEEDA;color:#854F0B}
+.tag-coral{background:#FAECE7;color:#993C1D}
+@media(prefers-color-scheme:dark){.tag-teal{background:#085041;color:#9FE1CB}.tag-purple{background:#3C3489;color:#CECBF6}.tag-amber{background:#633806;color:#FAC775}.tag-coral{background:#712B13;color:#F5C4B3}}
+.complexity{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1rem 0}
+.complexity>div{background:var(--bg2);border-radius:8px;padding:1rem}
+.complexity h4{font-size:.9rem;margin-bottom:.3rem}
+.complexity p{font-size:.85rem;color:var(--tx2);margin:0}
+@media(max-width:600px){.complexity{grid-template-columns:1fr}}
+.steps{counter-reset:step;list-style:none;padding-left:0}
+.steps li{counter-increment:step;position:relative;padding-left:2.5rem;margin:1rem 0}
+.steps li::before{content:counter(step);position:absolute;left:0;top:0;width:1.8rem;height:1.8rem;border-radius:50%;background:var(--acc);color:#fff;font-size:.8rem;font-weight:600;display:flex;align-items:center;justify-content:center}
+.toc{background:var(--bg2);border-radius:10px;padding:1.25rem 1.5rem;margin:1.5rem 0}
+.toc ul{list-style:none;padding:0}
+.toc li{margin:.3rem 0}
+.toc a{text-decoration:none;font-size:.95rem}
+.toc a:hover{text-decoration:underline}
+footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border);font-size:.85rem;color:var(--tx3);text-align:center}
+</style>
+</head>
+<body>
+
+<h1>Python Dictionaries &amp; Hash Collisions</h1>
+<p class="subtitle">A deep dive into how Python's most important data structure works under the hood — from hashing to probing to resizing.</p>
+
+<nav class="toc">
+<strong>Contents</strong>
+<ul>
+<li><a href="#how-it-works">1. How Dictionaries Work Internally</a></li>
+<li><a href="#collisions">2. What is a Hash Collision?</a></li>
+<li><a href="#probing">3. Collision Resolution: Open Addressing &amp; Probing</a></li>
+<li><a href="#hash-eq">4. The hash() Function and __hash__ / __eq__</a></li>
+<li><a href="#resizing">5. Table Resizing &amp; Load Factor</a></li>
+<li><a href="#compact">6. The Compact Dict (Python 3.6+)</a></li>
+<li><a href="#practical">7. Practical Implications &amp; Edge Cases</a></li>
+<li><a href="#code">8. Code Examples</a></li>
+</ul>
+</nav>
+
+<!-- ============================================================= -->
+<h2 id="how-it-works">1. How Dictionaries Work Internally</h2>
+
+<p>A Python <code>dict</code> is a <strong>hash table</strong> — an array of slots (called "buckets") where key-value pairs are stored. When you write <code>d[key] = value</code>, Python performs three steps:</p>
+
+<ol class="steps">
+<li><strong>Hash the key</strong> — compute <code>hash(key)</code> to get an integer.</li>
+<li><strong>Compute the index</strong> — calculate <code>hash(key) % table_size</code> to find which slot to use.</li>
+<li><strong>Store the pair</strong> — place the key-value pair at (or near) that slot.</li>
+</ol>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg" style="font-family:-apple-system,BlinkMacSystemFont,sans-serif">
+<defs><marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect x="20" y="40" width="130" height="48" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/>
+<text x="85" y="68" text-anchor="middle" font-weight="600" font-size="14" fill="#085041">"apple"</text>
+<line x1="150" y1="64" x2="200" y2="64" stroke="#555" stroke-width="1.2" marker-end="url(#a1)"/>
+<rect x="202" y="40" width="170" height="48" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width=".5"/>
+<text x="287" y="68" text-anchor="middle" font-weight="600" font-size="14" fill="#3C3489">hash("apple")</text>
+<line x1="372" y1="64" x2="422" y2="64" stroke="#555" stroke-width="1.2" marker-end="url(#a1)"/>
+<rect x="424" y="40" width="170" height="48" rx="8" fill="#FAEEDA" stroke="#BA7517" stroke-width=".5"/>
+<text x="509" y="68" text-anchor="middle" font-weight="600" font-size="14" fill="#633806">hash % 8 = 3</text>
+<line x1="594" y1="64" x2="644" y2="64" stroke="#555" stroke-width="1.2" marker-end="url(#a1)"/>
+<rect x="646" y="40" width="44" height="48" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="668" y="62" text-anchor="middle" font-weight="700" font-size="13" fill="#085041">[ 3 ]</text>
+<text x="85" y="110" text-anchor="middle" font-size="11" fill="#888">Key</text>
+<text x="287" y="110" text-anchor="middle" font-size="11" fill="#888">Hash function</text>
+<text x="509" y="110" text-anchor="middle" font-size="11" fill="#888">Index calculation</text>
+<text x="668" y="110" text-anchor="middle" font-size="11" fill="#888">Slot</text>
+</svg>
+</div>
+
+<p>Looking up a key follows the same process: hash it, compute the index, then check that slot. This is why dict operations are O(1) on average — you jump directly to the right location instead of scanning.</p>
+
+<!-- ============================================================= -->
+<h2 id="collisions">2. What is a Hash Collision?</h2>
+
+<p>A <strong>collision</strong> occurs when two different keys produce the same table index. For example, if both <code>hash("apple") % 8</code> and <code>hash("mango") % 8</code> equal <code>3</code>, they both want slot 3 — but only one can go there directly.</p>
+
+<div class="note">
+<strong>Why collisions are inevitable:</strong> There are infinitely many possible keys but only a finite number of table slots. By the <em>pigeonhole principle</em>, collisions must happen. The question is how to handle them efficiently.
+</div>
+
+<!-- ============================================================= -->
+<h2 id="probing">3. Collision Resolution: Open Addressing &amp; Probing</h2>
+
+<p>Python does <strong>not</strong> use chaining (linked lists at each slot), which is the textbook approach. Instead, it uses <strong>open addressing</strong> — when a collision occurs, Python searches for the next available slot using a deterministic <strong>probing sequence</strong>.</p>
+
+<h3>The Probing Formula</h3>
+
+<pre><code>j = ((5 * j) + 1 + perturb) % table_size
+perturb >>= 5   # shifts right by 5 bits each iteration</code></pre>
+
+<p>This formula has two parts, each solving a different problem:</p>
+
+<div class="complexity">
+<div>
+<h4><code>5 * j + 1</code></h4>
+<p>A linear congruential generator that visits every slot exactly once (mod 2<sup>n</sup>). Guarantees full coverage of the table.</p>
+</div>
+<div>
+<h4><code>+ perturb</code></h4>
+<p>Mixes in the <strong>higher-order bits</strong> of the full hash value. Keys with the same low bits don't all probe the same sequence.</p>
+</div>
+</div>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" style="font-family:-apple-system,BlinkMacSystemFont,sans-serif">
+<defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text x="350" y="24" text-anchor="middle" font-weight="600" font-size="14" fill="currentColor">"mango" also hashes to index 3 — collision!</text>
+<!-- 8 slots -->
+<rect x="30" y="55" width="72" height="45" rx="5" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><text x="66" y="82" text-anchor="middle" font-size="11" fill="#888">0: empty</text>
+<rect x="112" y="55" width="72" height="45" rx="5" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/><text x="148" y="75" text-anchor="middle" font-size="11" font-weight="600" fill="#085041">1: banana</text><text x="148" y="90" text-anchor="middle" font-size="10" fill="#0F6E56">→ 12</text>
+<rect x="194" y="55" width="72" height="45" rx="5" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><text x="230" y="82" text-anchor="middle" font-size="11" fill="#888">2: empty</text>
+<rect x="276" y="55" width="72" height="45" rx="5" fill="#FAEEDA" stroke="#BA7517" stroke-width="1"/><text x="312" y="75" text-anchor="middle" font-size="11" font-weight="600" fill="#633806">3: apple</text><text x="312" y="90" text-anchor="middle" font-size="10" fill="#854F0B">→ 5</text>
+<rect x="358" y="55" width="72" height="45" rx="5" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><text x="394" y="82" text-anchor="middle" font-size="11" fill="#888">4: empty</text>
+<rect x="440" y="55" width="72" height="45" rx="5" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/><text x="476" y="75" text-anchor="middle" font-size="11" font-weight="600" fill="#085041">5: cherry</text><text x="476" y="90" text-anchor="middle" font-size="10" fill="#0F6E56">→ 7</text>
+<rect x="522" y="55" width="72" height="45" rx="5" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><text x="558" y="82" text-anchor="middle" font-size="11" fill="#888">6: empty</text>
+<rect x="604" y="55" width="72" height="45" rx="5" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><text x="640" y="82" text-anchor="middle" font-size="11" fill="#888">7: empty</text>
+<!-- Probe 1: occupied -->
+<line x1="312" y1="40" x2="312" y2="53" stroke="#A32D2D" stroke-width="1.5" marker-end="url(#a2)"/>
+<text x="312" y="35" text-anchor="middle" font-size="11" font-weight="600" fill="#A32D2D">occupied!</text>
+<!-- Probe 2: success -->
+<path d="M312 38 Q340 20 394 38" fill="none" stroke="#0F6E56" stroke-width="1.5"/>
+<line x1="394" y1="38" x2="394" y2="53" stroke="#0F6E56" stroke-width="1.5" marker-end="url(#a2)"/>
+<text x="394" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#0F6E56">probe → slot 4</text>
+<!-- Result -->
+<rect x="358" y="120" width="72" height="45" rx="5" fill="#FAECE7" stroke="#D85A30" stroke-width="1"/>
+<text x="394" y="140" text-anchor="middle" font-size="11" font-weight="600" fill="#712B13">4: mango</text>
+<text x="394" y="155" text-anchor="middle" font-size="10" fill="#993C1D">→ 42</text>
+<line x1="394" y1="100" x2="394" y2="118" stroke="#D85A30" stroke-width="1" marker-end="url(#a2)"/>
+<text x="350" y="190" text-anchor="middle" font-size="12" fill="#888">The perturb variable ensures different keys diverge quickly even with shared low bits</text>
+</svg>
+</div>
+
+<p>Unlike simple linear probing (<code>j+1, j+2, j+3...</code>) which creates <strong>clustering</strong> (runs of occupied slots that slow future probes), Python's formula scatters probes across the table. The <code>perturb</code> variable decays to zero over iterations, at which point the formula becomes a pure linear congruential generator that guarantees visiting every slot.</p>
+
+<!-- ============================================================= -->
+<h2 id="hash-eq">4. The <code>hash()</code> Function and <code>__hash__</code> / <code>__eq__</code></h2>
+
+<p>For an object to be used as a dictionary key, it must implement two methods:</p>
+
+<table>
+<thead><tr><th>Method</th><th>Purpose</th><th>Rule</th></tr></thead>
+<tbody>
+<tr><td><code>__hash__()</code></td><td>Returns an integer used to find the slot</td><td>If <code>a == b</code>, then <code>hash(a) == hash(b)</code></td></tr>
+<tr><td><code>__eq__()</code></td><td>Confirms identity during collision resolution</td><td>Must be consistent with <code>__hash__</code></td></tr>
+</tbody>
+</table>
+
+<div class="note warn">
+<strong>Critical contract:</strong> If two objects are equal (<code>a == b</code>), their hashes <em>must</em> be equal. Violating this silently corrupts dictionary lookups — the key goes into one slot but lookups search a different slot.
+</div>
+
+<p>Built-in immutable types (<code>str</code>, <code>int</code>, <code>float</code>, <code>tuple</code> of immutables, <code>frozenset</code>) all implement these correctly. Mutable types like <code>list</code> and <code>dict</code> deliberately do <strong>not</strong> implement <code>__hash__</code>, which is why you can't use them as keys.</p>
+
+<p>An important nuance: <code>hash(a) == hash(b)</code> does <strong>not</strong> imply <code>a == b</code>. Two completely different objects can share the same hash — that's literally what a collision is. The <code>__eq__</code> check during probing is what disambiguates them.</p>
+
+<!-- ============================================================= -->
+<h2 id="resizing">5. Table Resizing &amp; Load Factor</h2>
+
+<p>Python monitors the <strong>load factor</strong> — the ratio of used slots (including tombstones) to total slots. When it exceeds roughly <strong>2/3 (~66%)</strong>, the table resizes.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 700 160" xmlns="http://www.w3.org/2000/svg" style="font-family:-apple-system,BlinkMacSystemFont,sans-serif">
+<defs><marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<!-- Before -->
+<text x="140" y="20" text-anchor="middle" font-weight="600" font-size="13" fill="currentColor">Before: 6/8 slots used (75%)</text>
+<g transform="translate(30,30)"><rect width="28" height="28" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/><rect x="33" width="28" height="28" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/><rect x="66" width="28" height="28" rx="4" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><rect x="99" width="28" height="28" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/><rect x="132" width="28" height="28" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/><rect x="165" width="28" height="28" rx="4" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><rect x="198" width="28" height="28" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/><rect x="231" width="28" height="28" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/></g>
+<!-- Load bar before -->
+<rect x="30" y="68" width="259" height="6" rx="3" fill="#ddd"/>
+<rect x="30" y="68" width="194" height="6" rx="3" fill="#A32D2D"/>
+<text x="230" y="78" font-size="10" fill="#A32D2D" font-weight="600">75%</text>
+<line x1="203" y1="64" x2="203" y2="78" stroke="#888" stroke-width=".5" stroke-dasharray="2 2"/>
+<text x="203" y="93" text-anchor="middle" font-size="10" fill="#888">2/3 threshold</text>
+<!-- Arrow -->
+<line x1="310" y1="45" x2="370" y2="45" stroke="#555" stroke-width="1.2" marker-end="url(#a3)"/>
+<text x="340" y="38" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">resize</text>
+<!-- After -->
+<text x="520" y="20" text-anchor="middle" font-weight="600" font-size="13" fill="currentColor">After: 6/16 slots used (37.5%)</text>
+<g transform="translate(380,30)"><rect width="22" height="22" rx="3" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/><rect x="26" width="22" height="22" rx="3" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><rect x="52" width="22" height="22" rx="3" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><rect x="78" width="22" height="22" rx="3" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/><rect x="104" width="22" height="22" rx="3" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><rect x="130" width="22" height="22" rx="3" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/><rect x="156" width="22" height="22" rx="3" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><rect x="182" width="22" height="22" rx="3" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><rect x="208" width="22" height="22" rx="3" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/><rect x="234" width="22" height="22" rx="3" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/><rect x="260" width="22" height="22" rx="3" fill="#f0f0ec" stroke="#bbb" stroke-width=".5"/></g>
+<!-- Load bar after -->
+<rect x="380" y="62" width="282" height="6" rx="3" fill="#ddd"/>
+<rect x="380" y="62" width="106" height="6" rx="3" fill="#0F6E56"/>
+<text x="492" y="72" font-size="10" fill="#0F6E56" font-weight="600">37.5%</text>
+<!-- Key facts -->
+<rect x="30" y="108" width="200" height="40" rx="6" fill="#EEEDFE" stroke="#534AB7" stroke-width=".5"/>
+<text x="130" y="125" text-anchor="middle" font-size="11" font-weight="600" fill="#3C3489">Size always 2ⁿ</text>
+<text x="130" y="140" text-anchor="middle" font-size="10" fill="#534AB7">8 → 16 → 32 → 64 …</text>
+<rect x="250" y="108" width="200" height="40" rx="6" fill="#FAEEDA" stroke="#BA7517" stroke-width=".5"/>
+<text x="350" y="125" text-anchor="middle" font-size="11" font-weight="600" fill="#633806">Every key rehashed</text>
+<text x="350" y="140" text-anchor="middle" font-size="10" fill="#854F0B">new idx = hash % new_size</text>
+<rect x="470" y="108" width="200" height="40" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width=".5"/>
+<text x="570" y="125" text-anchor="middle" font-size="11" font-weight="600" fill="#085041">Amortized O(1)</text>
+<text x="570" y="140" text-anchor="middle" font-size="10" fill="#0F6E56">O(n) resize is rare</text>
+</svg>
+</div>
+
+<p>During a resize, <strong>every</strong> existing key is rehashed against the new table size. Because the table grew (e.g. 8 → 16), <code>hash(key) % new_size</code> produces different indices, so keys scatter to new positions. This is O(n) but happens infrequently enough that insertions remain amortized O(1).</p>
+
+<!-- ============================================================= -->
+<h2 id="compact">6. The Compact Dict (Python 3.6+)</h2>
+
+<p>Since Python 3.6 (guaranteed in 3.7+), dictionaries use a <strong>split design</strong> with two arrays:</p>
+
+<table>
+<thead><tr><th>Array</th><th>Contents</th><th>Density</th></tr></thead>
+<tbody>
+<tr><td><strong>Indices array</strong></td><td>Small integers (1–8 bytes each) pointing into the entries array</td><td>Sparse (has empty slots)</td></tr>
+<tr><td><strong>Entries array</strong></td><td>Triples of <code>(hash, key, value)</code> in insertion order</td><td>Dense (no gaps)</td></tr>
+</tbody>
+</table>
+
+<p>This is why <code>dict</code> preserves insertion order in Python 3.7+ — it's a structural consequence of the compact layout, not a separate mechanism. The compact design also reduces memory usage by roughly 20–25% because the sparse index array uses 1-byte entries instead of full 3-pointer slots.</p>
+
+<!-- ============================================================= -->
+<h2 id="practical">7. Practical Implications &amp; Edge Cases</h2>
+
+<h3>Hash randomization <span class="tag tag-teal">Security</span></h3>
+<p>Since Python 3.3, string hashes are randomized per process via <code>PYTHONHASHSEED</code>. This defends against <strong>hash-flooding attacks</strong> where an attacker crafts keys that all collide, degrading dict operations from O(1) to O(n). Integer hashes are still deterministic (<code>hash(42) == 42</code> for small ints). Set <code>PYTHONHASHSEED=0</code> to disable for debugging.</p>
+
+<h3>Deletion uses tombstones <span class="tag tag-amber">Internals</span></h3>
+<p>When you <code>del d[key]</code>, Python marks the slot as a "dummy" entry (tombstone) rather than leaving it truly empty. This is necessary because probing relies on the chain of slots being unbroken — a real empty slot would terminate a probe search prematurely, making some existing keys unfindable.</p>
+
+<h3>Time complexity <span class="tag tag-purple">Performance</span></h3>
+<table>
+<thead><tr><th>Operation</th><th>Average</th><th>Worst case</th></tr></thead>
+<tbody>
+<tr><td>Get / Set / Delete</td><td>O(1)</td><td>O(n)</td></tr>
+<tr><td>Resize</td><td>—</td><td>O(n)</td></tr>
+<tr><td>Iteration</td><td>O(n)</td><td>O(n)</td></tr>
+</tbody>
+</table>
+<p>The worst case is effectively impossible under normal conditions thanks to the probing formula, resize policy, and hash randomization.</p>
+
+<h3>Hash flooding attacks <span class="tag tag-coral">Security</span></h3>
+<p>Before hash randomization, an attacker could send thousands of HTTP POST parameters (or JSON keys) specifically chosen to collide in Python's hash table. This turned each dict insertion into O(n) work, creating a denial-of-service with relatively small payloads. <code>PYTHONHASHSEED</code> makes this attack impractical because the hash function changes every time the process starts.</p>
+
+<div class="note danger">
+<strong>Never violate the hash/eq contract.</strong> If you implement a custom <code>__hash__</code> that returns different values for equal objects, dict lookups silently fail — the key is stored at one slot, but lookups compute a different slot. No error is raised.
+</div>
+
+<!-- ============================================================= -->
+<h2 id="code">8. Code Examples</h2>
+
+<h3>Basic hash mechanics</h3>
+<pre><code># Hash values for different types
+print(hash('apple'))   # large integer, randomized per process
+print(hash(42))        # 42 — small ints hash to themselves
+print(hash(42.0))      # same as hash(42), because 42 == 42.0
+print(hash((1, 2)))    # tuples are hashable
+
+# These raise TypeError (mutable → unhashable):
+# hash([1, 2])
+# hash({'a': 1})</code></pre>
+
+<h3>Simulating Python's probe sequence</h3>
+<pre><code>def probe_sequence(key, table_size=8, steps=5):
+    """Show where Python would look for a key."""
+    h = hash(key)
+    idx = h % table_size
+    perturb = h
+
+    print(f"Key: {key!r}, hash: {h}, initial slot: {idx}")
+    for i in range(steps):
+        print(f"  Probe {i}: slot {idx}")
+        idx = ((5 * idx) + 1 + perturb) % table_size
+        perturb >>= 5
+
+probe_sequence("apple")
+probe_sequence("mango")</code></pre>
+
+<h3>Correct vs broken __hash__/__eq__</h3>
+<pre><code>class GoodKey:
+    """Correctly implements the hash/eq contract."""
+    def __init__(self, val):
+        self.val = val
+    def __hash__(self):
+        return hash(self.val)
+    def __eq__(self, other):
+        return isinstance(other, GoodKey) and self.val == other.val
+
+class BadKey:
+    """BROKEN: equal objects can have different hashes."""
+    def __init__(self, val):
+        self.val = val
+    def __hash__(self):
+        return id(self)  # different object → different hash!
+    def __eq__(self, other):
+        return isinstance(other, BadKey) and self.val == other.val
+
+# Good key works:
+d = {GoodKey("x"): 100}
+print(d[GoodKey("x")])  # → 100
+
+# Bad key fails silently:
+d2 = {BadKey("x"): 100}
+# d2[BadKey("x")]  → KeyError! Can't find it.</code></pre>
+
+<h3>Forcing collisions — performance impact</h3>
+<pre><code>import time
+
+class CollidingKey:
+    """Every instance hashes to 42 — maximum collisions."""
+    def __init__(self, val):
+        self.val = val
+    def __hash__(self):
+        return 42
+    def __eq__(self, other):
+        return isinstance(other, CollidingKey) and self.val == other.val
+
+# Normal keys: O(1) per insert
+t0 = time.perf_counter()
+normal = {f"key_{i}": i for i in range(10_000)}
+print(f"Normal:    {(time.perf_counter()-t0)*1000:.1f} ms")
+
+# Colliding keys: O(n) per insert
+t0 = time.perf_counter()
+colliding = {CollidingKey(i): i for i in range(10_000)}
+print(f"Colliding: {(time.perf_counter()-t0)*1000:.1f} ms")
+# Colliding will be dramatically slower!</code></pre>
+
+<h3>Observing resize thresholds</h3>
+<pre><code>import sys
+
+d = {}
+prev = sys.getsizeof(d)
+print(f"Empty dict: {prev} bytes")
+
+for i in range(20):
+    d[i] = i
+    size = sys.getsizeof(d)
+    if size != prev:
+        print(f"After {i+1} inserts: {size} bytes (resized!)")
+        prev = size</code></pre>
+
+<footer>
+Python Dictionary &amp; Hash Collisions — Complete Reference Guide<br>
+Generated from a conversation with Claude (Anthropic) &bull; Save this file and open in any browser.
+</footer>
+
+</body>
+</html>
