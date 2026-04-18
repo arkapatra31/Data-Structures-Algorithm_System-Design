@@ -556,20 +556,67 @@ An **AVL tree** is a BST that keeps itself balanced — at every node, `|height(
 
 ### The Four Rotation Cases
 
-```
-LL (right-rotate z):              RR (left-rotate z):
+All four examples use the same node values so you can compare shapes directly — the tree before each case is imbalanced at the top node (balance factor ±2), and the rotation restores `|balance| ≤ 1`.
 
-      z                y              z                  y
-     / \             /   \           / \               /   \
-    y   T4  ───►    x     z         T1   y    ───►    z     x
-   / \             / \   / \            / \          / \   / \
-  x   T3          T1 T2 T3 T4          T2  x        T1 T2 T3 T4
- / \                                      / \
-T1  T2                                   T3  T4
+**LL — right-rotate 30** (left-heavy, inserted into left-of-left)
 
-LR (left-rotate y, then right-rotate z):
-RL (right-rotate y, then left-rotate z):
 ```
+Before (bal at 30 = +2):                After right-rotate(30):
+
+         30                                    20
+        /  \                                  /  \
+       20   40                              10    30
+      /  \            ───►                 / \    / \
+    10    25                              5  15  25  40
+    / \
+   5   15
+```
+
+**RR — left-rotate 20** (right-heavy, inserted into right-of-right)
+
+```
+Before (bal at 20 = -2):                After left-rotate(20):
+
+      20                                        50
+     /  \                                      /  \
+    10   50                                  20    60
+         / \           ───►                 / \    / \
+        30  60                             10 30  55  70
+            / \
+          55   70
+```
+
+**LR — left-rotate 10, then right-rotate 30** (left-heavy, inserted into right-of-left)
+
+```
+Step 1 — imbalance          Step 2 — left-rotate(10)         Step 3 — right-rotate(30)
+   at 30 (bal = +2):         lifts 20 above 10:                lifts 20 above 30:
+
+        30                          30                                20
+       /  \                        /  \                              /  \
+      10   40                     20   40                          10    30
+     /  \         ───►           /  \              ───►           / \    / \
+    5    20                    10    25                          5  15  25  40
+         / \                  /  \
+       15   25               5   15
+```
+
+**RL — right-rotate 30, then left-rotate 10** (right-heavy, inserted into left-of-right)
+
+```
+Step 1 — imbalance          Step 2 — right-rotate(30)        Step 3 — left-rotate(10)
+   at 10 (bal = -2):         drops 30 below 20:                lifts 20 above 10:
+
+      10                          10                                  20
+     /  \                        /  \                                /  \
+    5    30                     5    20                            10    30
+         / \      ───►              /  \         ───►             / \    / \
+       20   40                    15    30                       5  15  25  40
+       / \                              / \
+      15  25                          25   40
+```
+
+> In every case the **middle node of the three unbalanced levels ends up at the top** after the rotation — `y` for LL/RR, `x` for LR/RL. The subtrees just re-hang under their nearest ancestor that still makes a valid BST.
 
 | Imbalance | Detection | Fix |
 |-----------|-----------|-----|

@@ -3,11 +3,16 @@ Trees in DSA — 5. AVL Tree (Self-Balancing BST)
 Guarantees O(log n) by keeping |height(left) - height(right)| ≤ 1.
 Uses rotations to rebalance after insert/delete.
 
-4 rotation cases:
+4 rotation cases (examples use concrete values — see rotate_right /
+rotate_left docstrings for detailed tree diagrams):
   LL → single right rotation
+       e.g. {30, 20, 10} inserted in left-of-left → right-rotate(30)
   RR → single left rotation
+       e.g. {10, 20, 30} inserted in right-of-right → left-rotate(10)
   LR → left rotate child, then right rotate root
+       e.g. {30, 10, 20} → left-rotate(10); right-rotate(30) → 20 on top
   RL → right rotate child, then left rotate root
+       e.g. {10, 30, 20} → right-rotate(30); left-rotate(10) → 20 on top
 """
 
 
@@ -37,16 +42,21 @@ def update_height(node):
 # ---- Rotations ----
 
 def rotate_right(z):
-    """
-    Right rotation (fixes LL imbalance):
+    r"""
+    Right rotation (fixes LL imbalance).
 
-        z              y
-       / \           /   \
-      y   T4  →     x     z
-     / \           / \   / \
-    x   T3        T1 T2 T3 T4
-   / \
-  T1  T2
+    Example — right-rotate at 30:
+
+         30                        20
+        /  \                      /  \
+       20   40                  10    30
+      /  \         ───►        / \    / \
+     10   25                  5  15  25  40
+     / \
+    5   15
+
+    The middle node (20) rises; 30's old left subtree (25) becomes
+    20's new right child's left subtree.
     """
     y = z.left
     t3 = y.right
@@ -60,16 +70,21 @@ def rotate_right(z):
 
 
 def rotate_left(z):
-    """
-    Left rotation (fixes RR imbalance):
+    r"""
+    Left rotation (fixes RR imbalance).
 
-      z                y
-     / \             /   \
-    T1   y    →     z     x
-        / \        / \   / \
-       T2  x      T1 T2 T3 T4
-          / \
-         T3  T4
+    Example — left-rotate at 20:
+
+        20                              50
+       /  \                            /  \
+      10   50                        20    60
+           / \         ───►         / \    / \
+          30  60                   10 30  55  70
+              / \
+            55   70
+
+    The middle node (50) rises; 20's old right subtree (30) becomes
+    20's new right child.
     """
     y = z.right
     t2 = y.left

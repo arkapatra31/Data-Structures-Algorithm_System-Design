@@ -11,9 +11,9 @@ Use cases: autocomplete, spell checker, word search,
 
 class TrieNode:
     def __init__(self):
-        self.children = {}   # char → TrieNode
+        self.children = {}  # char → TrieNode
         self.is_end = False  # marks end of a complete word
-        self.count = 0       # how many words pass through this node
+        self.count = 0  # how many words pass through this node
 
 
 class Trie:
@@ -106,8 +106,7 @@ class Trie:
 # --- Demo ---
 if __name__ == "__main__":
     t = Trie()
-    words = ["cat", "car", "card", "care", "careful",
-             "dog", "dot", "does"]
+    words = ["cat", "car", "card", "care", "careful", "dog", "dot", "does"]
 
     for w in words:
         t.insert(w)
@@ -121,7 +120,7 @@ if __name__ == "__main__":
     print(f"autocomplete('do'): {t.autocomplete('do')}")
 
     t.delete("car")
-    print(f"\nAfter deleting 'car':")
+    print("\nAfter deleting 'car':")
     print(f"search('car'):      {t.search('car')}")
     print(f"search('card'):     {t.search('card')}")
     print(f"autocomplete('ca'): {t.autocomplete('ca')}")
