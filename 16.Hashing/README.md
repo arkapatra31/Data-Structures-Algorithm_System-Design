@@ -960,4 +960,4 @@ WHEN NOT TO HASH:
 
 ---
 
-*Previous: [Trees](../15.Trees/README.md) | Next: [Graphs](../Graphs/)*
+*Previous: [Trees](../15.Trees/README.md) | Next: [Sorting](../17.Sorting/README.md)*
