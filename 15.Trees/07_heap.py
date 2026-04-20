@@ -20,19 +20,20 @@ class MinHeap:
         self.heap = []
 
     def push(self, val):
-        """Add element and bubble up."""
+        """Append at the end, then heapify upward toward the root."""
         self.heap.append(val)
-        self._sift_up(len(self.heap) - 1)
+        self._heapify_insert(len(self.heap) - 1)
 
     def pop(self):
-        """Remove and return smallest element."""
+        """Remove root: save it, move last element to root, heapify downward."""
         if not self.heap:
             return None
-        self._swap(0, len(self.heap) - 1)
-        val = self.heap.pop()
+        extracted = self.heap[0]
+        last = self.heap.pop()
         if self.heap:
-            self._sift_down(0)
-        return val
+            self.heap[0] = last
+            self._heapify_extract(0)
+        return extracted
 
     def peek(self):
         """View smallest without removing."""
@@ -41,36 +42,33 @@ class MinHeap:
     def size(self):
         return len(self.heap)
 
-    def _sift_up(self, i):
-        """Bubble element up until heap property restored."""
-        while i > 0:
-            parent = (i - 1) // 2
-            if self.heap[i] < self.heap[parent]:
-                self._swap(i, parent)
-                i = parent
-            else:
-                break
+    def _heapify_insert(self, index):
+        """Recursively swap with parent while child is smaller."""
+        if index <= 0:
+            return
+        parent = (index - 1) // 2
+        if self.heap[index] < self.heap[parent]:
+            self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
+        self._heapify_insert(parent)
 
-    def _sift_down(self, i):
-        """Push element down until heap property restored."""
+    def _heapify_extract(self, index):
+        """Recursively swap with smaller child. Three cases: no left child,
+        only a left child, or both children (pick the smaller one)."""
         n = len(self.heap)
-        while True:
-            smallest = i
-            left = 2 * i + 1
-            right = 2 * i + 2
+        left = 2 * index + 1
+        right = 2 * index + 2
 
-            if left < n and self.heap[left] < self.heap[smallest]:
-                smallest = left
-            if right < n and self.heap[right] < self.heap[smallest]:
-                smallest = right
-
-            if smallest == i:
-                break
-            self._swap(i, smallest)
-            i = smallest
-
-    def _swap(self, i, j):
-        self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
+        if n <= left:
+            return
+        elif n == left + 1:
+            if self.heap[index] > self.heap[left]:
+                self.heap[index], self.heap[left] = self.heap[left], self.heap[index]
+            return
+        else:
+            swap_child = left if self.heap[left] < self.heap[right] else right
+            if self.heap[index] > self.heap[swap_child]:
+                self.heap[index], self.heap[swap_child] = self.heap[swap_child], self.heap[index]
+            self._heapify_extract(swap_child)
 
 
 class MaxHeap:
@@ -81,46 +79,48 @@ class MaxHeap:
 
     def push(self, val):
         self.heap.append(val)
-        self._sift_up(len(self.heap) - 1)
+        self._heapify_insert(len(self.heap) - 1)
 
     def pop(self):
         if not self.heap:
             return None
-        self._swap(0, len(self.heap) - 1)
-        val = self.heap.pop()
+        extracted = self.heap[0]
+        last = self.heap.pop()
         if self.heap:
-            self._sift_down(0)
-        return val
+            self.heap[0] = last
+            self._heapify_extract(0)
+        return extracted
 
     def peek(self):
         return self.heap[0] if self.heap else None
 
-    def _sift_up(self, i):
-        while i > 0:
-            parent = (i - 1) // 2
-            if self.heap[i] > self.heap[parent]:
-                self._swap(i, parent)
-                i = parent
-            else:
-                break
+    def size(self):
+        return len(self.heap)
 
-    def _sift_down(self, i):
+    def _heapify_insert(self, index):
+        if index <= 0:
+            return
+        parent = (index - 1) // 2
+        if self.heap[index] > self.heap[parent]:
+            self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
+        self._heapify_insert(parent)
+
+    def _heapify_extract(self, index):
         n = len(self.heap)
-        while True:
-            largest = i
-            left = 2 * i + 1
-            right = 2 * i + 2
-            if left < n and self.heap[left] > self.heap[largest]:
-                largest = left
-            if right < n and self.heap[right] > self.heap[largest]:
-                largest = right
-            if largest == i:
-                break
-            self._swap(i, largest)
-            i = largest
+        left = 2 * index + 1
+        right = 2 * index + 2
 
-    def _swap(self, i, j):
-        self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
+        if n <= left:
+            return
+        elif n == left + 1:
+            if self.heap[index] < self.heap[left]:
+                self.heap[index], self.heap[left] = self.heap[left], self.heap[index]
+            return
+        else:
+            swap_child = left if self.heap[left] > self.heap[right] else right
+            if self.heap[index] < self.heap[swap_child]:
+                self.heap[index], self.heap[swap_child] = self.heap[swap_child], self.heap[index]
+            self._heapify_extract(swap_child)
 
 
 def heapify(arr):
