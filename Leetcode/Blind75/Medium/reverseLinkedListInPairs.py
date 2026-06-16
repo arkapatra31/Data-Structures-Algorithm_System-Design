@@ -8,26 +8,6 @@ class Solution:
     def swapPairs(self, head: Node) -> Node:
         # 1 -> 2 -> 3 -> 4 -> 5
         # 2 -> 1 -> 4 -> 3 -> 5
-        # dummy = Node(0)
-        # dummy.next = head
-        # prev = dummy
-
-        # while prev.next and prev.next.next:
-        #     a = prev.next        # first node of pair
-        #     b = prev.next.next   # second node of pair
-
-        #     prev.next = b        # connect prev to second node
-        #     a.next = b.next      # first node skips past second
-        #     b.next = a           # second node points to first
-
-        #     prev = a             # advance prev to end of swapped pair
-
-        # return dummy.next
-        # prev, current = head, head.next
-        # while current.next and current.next.next:
-        #     prev.value, current.value = current.value, prev.value
-        #     prev, current = prev.next.next, current.next.next
-        # return head
         dummy = Node(None)
         dummy.next = head
         prev, current = dummy, dummy.next
