@@ -23,13 +23,12 @@ class Solution:
             k -= 1
 
 if __name__ == "__main__":
-    # nums1 = [-1,0,0,3,3,3,0,0,0]
-    # m = 6
-    # nums2 = [1,2,2]
-    # n = 3
-    nums1= [0]
-    m = 0
-    nums2 = [1]
-    n = 1
-    Solution().merge(nums1, m, nums2, n)
-    print(nums1)
+    nums1 = [1,2,3,0,0,0]#[-1,0,0,3,3,3,0,0,0]
+    m = 3
+    nums2 = [2,5,6]#[1,2,2]
+    n = 3
+    # Solution().merge(nums1, m, nums2, n)
+    # print(nums1)
+    k = nums1[:m] + nums2[:n]
+    k.sort()
+    print(k)

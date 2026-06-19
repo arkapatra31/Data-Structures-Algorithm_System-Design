@@ -1,5 +1,5 @@
+# Problem: https://leetcode.com/problems/counting-bits/
 from typing import List
-from collections import Counter
 
 class Solution:
     def countBits(self, n: int) -> List[int]:
@@ -9,4 +9,4 @@ class Solution:
         return l
 
 if __name__ == "__main__":
-    print(Solution().countBits(2))
+    print(Solution().countBits(5))

@@ -1,3 +1,4 @@
+# Problem: https://leetcode.com/problems/longest-consecutive-sequence/
 from typing import List
 
 # Method to find the number of longest consecutive numbers present in the list
@@ -19,6 +20,6 @@ def longestConsecutive(nums: List[int]) -> int:
             count = 1
     return max_count
 
-#nums = [100,4,200,1,3,2]
-nums = [1,100]
+nums = [100,4,200,1,3,2]
+#nums = [1,100]
 print(longestConsecutive(nums))
