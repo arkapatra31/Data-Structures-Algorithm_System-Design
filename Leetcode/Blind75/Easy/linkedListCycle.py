@@ -15,15 +15,9 @@ class Solution:
         fast = head      # Hare - moves 2 steps
         
         while fast and fast.next:
-            print(f"Slow: {slow.val}, Fast: {fast.val}")
             slow = slow.next
             fast = fast.next.next
-            print(f"Slow: {slow.val}, Fast: {fast.val}")
-            print("-"*20)
             if slow == fast:  # Pointers meet = cycle found
-                print("Cycle found")
-                print(f"Slow: {slow.val}, Fast: {fast.val}")
-                print("-"*20)
                 return True
         
         return False 
